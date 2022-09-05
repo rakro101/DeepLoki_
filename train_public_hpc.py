@@ -14,7 +14,7 @@ if __name__ == '__main__':
     time.sleep(5)
     print('sleep')
     arg_dict = create_arg_dict(reload=False, add_img=False, data_dir='./data/lowhangingfruits',
-                               file_path_train='./data/lowhangingfruits', normalize_on=0,
+                               file_path_train='./data/lowhangingfruits',
                                result_file_name='lowhangingfruits',
                                model_id='lowhangingfruits',
                                model_name="resnet",

@@ -10,7 +10,6 @@ See https://github.com/
 # Usage
 <br>
 The script always expects the following folder structure: train, test, val  and then the classes.
-See patches_A_resnet as example.
 <br>
 train_public_hpc.py - Script for Training a CNN form the list.
 <br>

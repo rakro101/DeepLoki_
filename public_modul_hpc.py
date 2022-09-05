@@ -171,7 +171,6 @@ class Trainer():
         self.tissue_per = args.tissue_per
         self.gamma = args.gamma
         self.lr_step_size = args.lr_step_size
-        self.normalize_on = args.normalize_on
         self.data_load_shuffle = args.data_load_shuffle
         self.label_coloring =args.label_coloring
         self.save_colored_dir = args.save_colored_dir
@@ -1117,13 +1116,6 @@ class Trainer():
         filename = re.split('\\\\', path)[-1]
         name, ext = os.path.splitext(filename)
         img = Image.open(os.path.join(path))
-        if self.normalize_on:
-            img = np.array(img)
-            try:
-                img = ns.normalizeStaining(img, saveFile=None, Io=240, alpha=1, beta=0.15)
-            except Exception as err:
-                print(err)
-            img =Image.fromarray(img)
         if self.resize:
             img = np.array(img)
             img = self.resize_input(img)

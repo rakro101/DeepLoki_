@@ -13,8 +13,8 @@ def create_arg_dict(
                     data_dir='./data/raw_data/',
                     file_path_train='./data/raw_data/',
                     train_val_test=['train', 'val', 'test'],
-                    train_tile_classes=['ADI', 'BG', 'HLN',  'HP', 'PDAC'],
-                    class_names=['ADI', 'BG', 'HLN',  'HP', 'PDAC', 'NL'],
+                    train_tile_classes=['Loki', 'Other'],
+                    class_names=['Loki', 'Other', 'NL'],
                     tile_size=224,
                     dont_save_tiles='yes',
                     model_name="resnet",
@@ -32,15 +32,14 @@ def create_arg_dict(
                     save_path='./saved_models/',
                     folder_path='data/ex_test',
                     reload_path='./saved_models/train_model.pth',
-                    result_file_name='base_line_model_new_BackGround__2',#'my_folder_pathoFIT_18_final'
-                    model_id='base_line_model_new_BackGround__2',#'my_model_pathoFIT_18_final',
+                    result_file_name='base_line_model_new_BackGround__2',
+                    model_id='base_line_model_new_BackGround__2',
                     learning_rate=0.0001,
                     pixel_cutoff = 256,
                     tissue_per = 0.3,
                     early_stop = 5,
                     gamma = 0.95,
                     lr_step_size= 5,
-                    normalize_on = 0,
                     data_load_shuffle = True,
                     label_coloring = True,
                     save_colored_dir = './results/colored_img',
@@ -54,7 +53,7 @@ def create_arg_dict(
                     save_class_patches=False,
                     save_class_patches_path='./patches_A/',
                     save_class_patches_mod='train',
-                    save_class_patches_class='HP',
+                    save_class_patches_class='Loki',
                     save_infer_img = True,
                     patches_mod = False,
                     ):
@@ -90,7 +89,6 @@ def create_arg_dict(
     arg_dict['early_stop'] = early_stop
     arg_dict['gamma'] = gamma #
     arg_dict['lr_step_size'] = lr_step_size
-    arg_dict['normalize_on'] = normalize_on
     arg_dict['data_load_shuffle'] = data_load_shuffle
     arg_dict['label_coloring'] = label_coloring
     arg_dict['save_colored_dir'] = save_colored_dir
