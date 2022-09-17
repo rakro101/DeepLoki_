@@ -1,6 +1,6 @@
 from public_modul_hpc import *
 import argparse
-__author__ = "Philipp Lang and Raphael Kronberg Department of Molecular Medicine II, Medical Faculty," \
+__author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
              " Heinrich-Heine-University"
 __license__ = "MIT"
 __version__ = "1.0.1"

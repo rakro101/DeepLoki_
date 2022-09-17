@@ -19,18 +19,18 @@ import math
 import glob
 from sklearn.metrics import confusion_matrix
 import getpass
-import normalizeStaining as ns
+#import normalizeStaining as ns
 import itertools
 import re
 from sklearn.metrics import roc_auc_score, f1_score,precision_score, recall_score,balanced_accuracy_score,jaccard_score, classification_report
 import logging
-
+from skimage.transform import resize
 
 # create logger with 'spam_application'
-logger = logging.getLogger('spam_application')
+logger = logging.getLogger('loki')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
-fh = logging.FileHandler('spam.log')
+fh = logging.FileHandler('loki.log')
 fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler()
@@ -45,7 +45,7 @@ logger.addHandler(ch)
 
 logger.info('start logging')
 
-__author__ = "Philipp Lang and Raphael Kronberg Department of Molecular Medicine II, Medical Faculty," \
+__author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
              " Heinrich-Heine-University"
 __license__ = "MIT"
 __version__ = "1.0.1"
@@ -1027,12 +1027,15 @@ class Trainer():
 
     def resize_input(self, imgA):
         ''' resize the input pictures to a fixed size '''
-        i_shape = imgA.shape
-        x = i_shape[0]
-        y = i_shape[1]
-        mp_x = int(1/2 * (x-self.resize_shape[0]))
-        mp_y = int(1/2 * (y - self.resize_shape[1]))
-        imgA = imgA[mp_x:self.resize_shape[0] + mp_x, mp_y:self.resize_shape[1] + mp_y, :]
+        imgA = torch.tensor(imgA)
+        imgA = np.transpose(imgA, (2, 0, 1))
+        print(imgA.shape)
+        transform = torchvision.transforms.Resize((224, 224))
+        imgA =transform(imgA)
+        print(imgA.shape)
+        imgA = np.array(imgA)
+        imgA = np.transpose(imgA, (1, 2, 0))
+        print(imgA.shape)
         return imgA
 
 
@@ -1118,7 +1121,15 @@ class Trainer():
         img = Image.open(os.path.join(path))
         if self.resize:
             img = np.array(img)
-            img = self.resize_input(img)
+            if len(img.shape) == 2:
+                img = np.expand_dims(img, axis=0)
+                img = np.vstack([img] * 3)
+                img = np.transpose(img, (1, 2, 0))
+            try:
+                img = self.resize_input(img)
+            except Exception as err:
+                print(err)
+
             img = Image.fromarray(img)
         w, h = img.size
         c = min(w,h)
