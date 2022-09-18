@@ -10,21 +10,21 @@ __credits__ = "Pls cite and refer to when using the code: Kronberg R. et al.," \
                 "of Histopathological Prediction of Pancreatic Ductal Adenocarcinoma.  , Journal, 2022"
 
 if __name__ == '__main__':
-    arg_dict = create_arg_dict(reload=False, add_img=False, data_dir='./data/loki',
-                               file_path_train='./data/loki',
-                               result_file_name='loki',
-                               model_id='loki',
-                               model_name="resnet",
+    arg_dict = create_arg_dict(reload=False, add_img=False, data_dir='./data/loki_subclasses',
+                               file_path_train='./data/loki_subclasses',
+                               result_file_name='loki_subclasses',
+                               model_id='loki_subclasses',
+                               model_name="vgg19",
                                tile_size=224,
                                optimizer_name='ADAM',
-                               train_tile_classes=['92267', '92782', '13364', '92263', '83742', '92269', '82653', '85026', '92266', '93028', '92245', '92273', '92068', '17263', '92253', '92268', '92767', '85116', '81950', '92247', '92323', '342', '82502', '85078', '80135', '92762', '51958', '85060', '30815', '25828', '92277', '92274', '92270', '85079', '84963', '45074', '80126', '92275', '81965', '80134'],
-                               class_names=['92267', '92782', '13364', '92263', '83742', '92269', '82653', '85026', '92266', '93028', '92245', '92273', '92068', '17263', '92253', '92268', '92767', '85116', '81950', '92247', '92323', '342', '82502', '85078', '80135', '92762', '51958', '85060', '30815', '25828', '92277', '92274', '92270', '85079', '84963', '45074', '80126', '92275', '81965', '80134', 'NL'],
+                               train_tile_classes=['Metridia_longa', 'Crustacea', 'Detritus', 'Calanus', 'Paraeuchaeta', 'Multiple', 'Calanoida', 'Copepoda', 'Oithona', 'Themisto', 'Bubble', 'Ostracoda', 'Microcalanus', 'Oncaea', 'Chaetognatha', 'Oithona_similis', 'Unknown', 'Eukrohnia_hamata', 'Pseudocalanus', 'Feces', 'Acantharia', 'Egg', 'Rhizaria'],
+                               class_names=['Metridia_longa', 'Crustacea', 'Detritus', 'Calanus', 'Paraeuchaeta', 'Multiple', 'Calanoida', 'Copepoda', 'Oithona', 'Themisto', 'Bubble', 'Ostracoda', 'Microcalanus', 'Oncaea', 'Chaetognatha', 'Oithona_similis', 'Unknown', 'Eukrohnia_hamata', 'Pseudocalanus', 'Feces', 'Acantharia', 'Egg', 'Rhizaria', 'NL'],
                                batch_size=256,
                                num_epochs=100,
-                               learning_rate=0.0001,
+                               learning_rate=0.01,
                                pixel_cutoff= 256,
-                               early_stop= 15,
-                               num_train_layers= 3,
+                               early_stop= 100,
+                               num_train_layers= 10,
                                )
     args = get_arguments(arg_dict)
     T2 = Trainer(args)
