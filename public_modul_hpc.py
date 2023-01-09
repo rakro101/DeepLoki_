@@ -24,6 +24,7 @@ import itertools
 import re
 from sklearn.metrics import roc_auc_score, f1_score,precision_score, recall_score,balanced_accuracy_score,jaccard_score, classification_report
 import logging
+from pathlib import Path
 from skimage.transform import resize
 
 # create logger with 'spam_application'
@@ -50,9 +51,8 @@ __author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
 __license__ = "MIT"
 __version__ = "1.0.1"
 __status__ = "Prototype: This progam/code can not be used as diagnostic tool."
-__credits__ = "Pls cite and refer to when using the code: Kronberg R. et al., Data Preprocessing via Communicators for " \
-              "Deep Transfer Learning to predict pancreatic ductal adenocarcinoma primary tumors and metastases from " \
-              "histology slides , Journal, 2021"
+__credits__ = "Pls cite and refer to when using the code: Kronberg R.M.," \
+              "Applications of Supervised Deep (Transfer) Learning for Medical Image Classification"
 
 # seed
 torch.manual_seed(12345)
@@ -257,7 +257,8 @@ class Trainer():
         self.model_maker()
         # load parameters from the pth file
         #print('#######', self.reload_path)
-        self.model_ft.load_state_dict(torch.load(self.reload_path))
+        #self.model.to(self.device)
+        self.model_ft.load_state_dict(torch.load(self.reload_path,map_location=torch.device(self.device)))
         self.model_ft.eval()
 
     ########################################################################################################################
@@ -450,7 +451,7 @@ class Trainer():
         if self.model_name == "resnet":
             """ Resnet18
             """
-            self.model_ft = models.resnet18(pretrained=self.use_pretrained)
+            self.model_ft = models.resnet18(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
             self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
@@ -459,7 +460,7 @@ class Trainer():
         elif self.model_name == "resnet50":
             """ Resnet50
             """
-            self.model_ft = models.resnet50(pretrained=self.use_pretrained)
+            self.model_ft = models.resnet50(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
             self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
@@ -468,7 +469,7 @@ class Trainer():
         elif self.model_name == "resnet101":
             """ Resnet101
             """
-            self.model_ft = models.resnet101(pretrained=self.use_pretrained)
+            self.model_ft = models.resnet101(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
             self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
@@ -477,7 +478,7 @@ class Trainer():
         elif self.model_name == "resnet152":
             """ Resnet152
             """
-            self.model_ft = models.resnet152(pretrained=self.use_pretrained)
+            self.model_ft = models.resnet152(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
             self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
@@ -486,7 +487,7 @@ class Trainer():
         elif self.model_name == "alexnet":
             """ Alexnet
             """
-            self.model_ft = models.alexnet(pretrained=self.use_pretrained)
+            self.model_ft = models.alexnet(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
             self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
@@ -495,7 +496,7 @@ class Trainer():
         elif self.model_name == "vgg":
             """ VGG11_bn
             """
-            self.model_ft = models.vgg11_bn(pretrained=self.use_pretrained)
+            self.model_ft = models.vgg11_bn(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
             self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
@@ -504,7 +505,7 @@ class Trainer():
         elif self.model_name == "vgg16":
             """ VGG16_bn
             """
-            self.model_ft = models.vgg16_bn(pretrained=self.use_pretrained)
+            self.model_ft = models.vgg16_bn(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
             self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
@@ -513,7 +514,7 @@ class Trainer():
         elif self.model_name == "vgg19":
             """ VGG19_bn
             """
-            self.model_ft = models.vgg19_bn(pretrained=self.use_pretrained)
+            self.model_ft = models.vgg19_bn(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
             self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
@@ -523,7 +524,7 @@ class Trainer():
         elif self.model_name == "squeezenet":
             """ Squeezenet
             """
-            self.model_ft = models.squeezenet1_0(pretrained=self.use_pretrained)
+            self.model_ft = models.squeezenet1_0(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             self.model_ft.classifier[1] = nn.Conv2d(512, self.num_classes, kernel_size=(1, 1), stride=(1, 1))
             self.model_ft.num_classes = self.num_classes
@@ -532,7 +533,7 @@ class Trainer():
         elif self.model_name == "densenet":
             """ Densenet
             """
-            self.model_ft = models.densenet121(pretrained=self.use_pretrained)
+            self.model_ft = models.densenet121(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier.in_features
             self.model_ft.classifier = nn.Linear(num_ftrs, self.num_classes)
@@ -542,7 +543,7 @@ class Trainer():
             """ Inception v3
             Be careful, expects (299,299) sized images and has auxiliary output
             """
-            self.model_ft = models.inception_v3(pretrained=self.use_pretrained)
+            self.model_ft = models.inception_v3(weights=self.use_pretrained)
             self.set_parameter_requires_grad()
             #set_parameter_requires_grad(model_ft, feature_extract)
             # Handle the auxilary net
@@ -599,6 +600,12 @@ class Trainer():
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
                 transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
+                transforms.RandomAutocontrast(p=0.5),
+                transforms.RandomEqualize(p=0.5),
+                transforms.RandomPerspective(distortion_scale=0.5, p=0.5),
+                transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.5),
+                transforms.RandomPosterize(bits=4, p=0.5)
+
             ]),
             'val': transforms.Compose([
                 transforms.ToTensor(),
@@ -773,13 +780,13 @@ class Trainer():
                             if self.validate_input(canidate):
                                 FileNameNr = str(tiles) + FileNamePure
                                 FileName = os.path.join(self.train_tile_path, str(self.tile_size), TVT, TTC,
-                                                        FileNameNr + '.tif')
+                                                        FileNameNr + '.png')
                                 im = Image.fromarray(SplitArray[tiles])
                                 im.save(FileName)
                             else:
                                 FileNameNr = str(tiles) + FileNamePure
                                 FileName = os.path.join(self.train_tile_path, str(self.tile_size), TVT, 'IT',
-                                                        FileNameNr + '.tif')
+                                                        FileNameNr + '.png')
                                 im = Image.fromarray(SplitArray[tiles])
                                 im.save(FileName)
 
@@ -842,11 +849,13 @@ class Trainer():
         predictions_decoded = []
         imgs = []
         sm = nn.Softmax(dim=1)
-        tissue_arrays_ADI = []
-        tissue_arrays_HLN = []
-        tissue_arrays_HP = []
-        tissue_arrays_PDAC = []
-        tissue_arrays_BG = []
+        cl_list_dicts = {}
+        for cl in self.class_names:
+            cl_list_dicts[cl] = []
+            f1 = self.save_class_patches_path
+            f2 = self.save_class_patches_mod
+            temp_path = f"{f1}/{f2}/{cl}"
+            self.create_folder(path = temp_path)
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(self.dataloader_dict['ana']):
                 inputs = inputs.to(self.device)
@@ -867,18 +876,13 @@ class Trainer():
                             print('classname:', self.class_names[preds[j]])
                             predictions_decoded.append(self.class_names[preds[j]])
                         if self.save_class_patches and np.sum(sm(outputs).cpu().numpy(), axis=0)[preds.item()] >= self.treshhold:
-                            if self.class_names[preds[j]] == 'ADI':
-                                self.tensor2array(tissue_arrays_ADI, j, inputs)
-                            elif self.class_names[preds[j]] == 'HLN':
-                                self.tensor2array(tissue_arrays_HLN, j, inputs)
-                            elif self.class_names[preds[j]] == 'HP':
-                                self.tensor2array(tissue_arrays_HP, j, inputs)
-                            elif self.class_names[preds[j]] == 'PDAC':
-                                self.tensor2array(tissue_arrays_PDAC, j, inputs)
-                            elif self.class_names[preds[j]] == 'BG':
-                                self.tensor2array(tissue_arrays_BG, j, inputs)
-
-
+                            self.tensor2array(cl_list_dicts[self.class_names[preds[j]]], j, inputs)
+                        else:
+                            try:
+                                self.tensor2array(cl_list_dicts['Unknown'], j, inputs)
+                            except:
+                                self.tensor2array(cl_list_dicts['NL'], j, inputs)
+                                print('No Unknown Folder present')
                     if np.sum(sm(outputs).cpu().numpy(), axis=0)[preds.item()] > self.treshhold:
                         temp_img = self.color_img_by_label(inputs, preds.item())
                     else:
@@ -898,65 +902,25 @@ class Trainer():
         labs = self.ignore_placeholder_label(self.class_names)
         pic_label, label_scores = self.label_pic_based_on_calc_score(predictions_decoded, labs)
         if self.save_class_patches:
-            image_count = 0
-            for tiles in range(len(tissue_arrays_ADI)):
-                tissue_tile = tissue_arrays_ADI[tiles]
-                tif_im = Image.fromarray((tissue_tile * 255).astype(np.uint8))
-                image_count += 1
+            for keyy in cl_list_dicts.keys():
+                image_count = 0
+                for tiles in range(len(cl_list_dicts[keyy])):
+                    tissue_tile = cl_list_dicts[keyy][tiles]
+                    tif_im = Image.fromarray((tissue_tile * 255).astype(np.uint8))
+                    image_count += 1
 
-                if self.patches_mod:
-                    file_name = name
-                else:
-                    file_name = str(name[:-4]) + '_1_' + str(image_count) + ".tif"
-                file_path = os.path.join(self.save_class_patches_path, self.save_class_patches_mod,'ADI',file_name)
-                tif_im.save(file_path)
-            image_count = 0
-            for tiles in range(len(tissue_arrays_HLN)):
-                tissue_tile = tissue_arrays_HLN[tiles]
-                tif_im = Image.fromarray((tissue_tile * 255).astype(np.uint8))
-                image_count += 1
-                if self.patches_mod:
-                    file_name = name
-                else:
-                    file_name = str(name[:-4]) + '_3_' + str(image_count) + ".tif"
-                file_path = os.path.join(self.save_class_patches_path, self.save_class_patches_mod,'HLN',file_name)
-                tif_im.save(file_path)
-            image_count = 0
-            for tiles in range(len(tissue_arrays_PDAC)):
-                tissue_tile = tissue_arrays_PDAC[tiles]
-                tif_im = Image.fromarray((tissue_tile * 255).astype(np.uint8))
-                image_count += 1
-                if self.patches_mod:
-                    file_name = name
-                else:
-                    file_name = str(name[:-4]) + '_5_' + str(image_count) + ".tif"
-                file_path = os.path.join(self.save_class_patches_path, self.save_class_patches_mod, 'PDAC', file_name)
-                tif_im.save(file_path)
-            image_count = 0
-            for tiles in range(len(tissue_arrays_HP)):
-                tissue_tile = tissue_arrays_HP[tiles]
-                tif_im = Image.fromarray((tissue_tile * 255).astype(np.uint8))
-                image_count += 1
-                if self.patches_mod:
-                    file_name = name
-                else:
-                    file_name = str(name[:-4]) + '_6_' + str(image_count) + ".tif"
-                file_path = os.path.join(self.save_class_patches_path, self.save_class_patches_mod, 'HP', file_name)
-
-                tif_im.save(file_path)
-            image_count = 0
-            for tiles in range(len(tissue_arrays_BG)):
-                tissue_tile = tissue_arrays_BG[tiles]
-                tif_im = Image.fromarray((tissue_tile * 255).astype(np.uint8))
-                image_count += 1
-                if self.patches_mod:
-                    file_name = name
-                else:
-                    file_name = str(name[:-4]) + '_7_' + str(image_count) + ".tif"
-                file_path = os.path.join(self.save_class_patches_path, self.save_class_patches_mod, 'BG', file_name)
-                tif_im.save(file_path)
+                    if self.patches_mod:
+                        file_name = name
+                    else:
+                        file_name = str(name[:-4]) + '_1_' + str(image_count) + ".png"
+                    file_path = os.path.join(self.save_class_patches_path, self.save_class_patches_mod,f'{keyy}',file_name)
+                    tif_im.save(file_path)
         return predictions_decoded, pic_label, label_scores
 
+    def create_folder(self, path):
+        # creating a new directory called pythondirectory
+        Path(path).mkdir(parents=True, exist_ok=True)
+        return None
     def ignore_placeholder_label(self, class_names):
         ''' ingnore no label data procedure '''
         noNLlabels = []
@@ -1001,9 +965,11 @@ class Trainer():
             img_count = 0
             label_procent = 0.0*np.arange(len(self.train_tile_classes))
             writer.writeheader()
+            #print('#'*20)
             for path, subdirs, files in os.walk(self.folder_path):
+                #print('*' * 12)
                 for name in files:
-                    if name.endswith('.tif'):
+                    if name.endswith('.png'):
                         print(os.path.join(path, name))
                         file_list.append(os.path.join(path, name))
                         self.get_that_tiles_Arr_dict_new(imgNr=os.path.join(path, name))
@@ -1104,6 +1070,7 @@ class Trainer():
             else:
                 pos = [(r, g, b), (r, g, b), (r, g, b), (r, g, b), (r, g, b), (r, g, b), (r, g, b), (r, g, b),
                        (r, g, b), (r, g, b), (r, g, b), (r, g, b), (r, g, b)]
+                pos = [(r, g, b) for i in range(0, self.num_classes+1)]
                 print('To many classes adjust the pos variable with more colors')
 
         else:

@@ -5,9 +5,9 @@ __author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
 __license__ = "MIT"
 __version__ = "1.0.1"
 __status__ = "Prototype: This progam/code can not be used as diagnostic tool."
-__credits__ = "Pls cite and refer to when using the code: Kronberg R. et al.," \
-                "Communicator-driven Data Preprocessing Improves Deep Transfer Learning" \
-                "of Histopathological Prediction of Pancreatic Ductal Adenocarcinoma.  , Journal, 2021"
+__credits__ = "Pls cite and refer to when using the code: Kronberg R.M.," \
+              "Applications of Supervised Deep (Transfer) Learning for Medical Image Classification"
+
 
 def create_arg_dict(
                     data_dir='./data/raw_data/',
@@ -39,7 +39,7 @@ def create_arg_dict(
                     tissue_per = 0.3,
                     early_stop = 5,
                     gamma = 0.95,
-                    lr_step_size= 5,
+                    lr_step_size= 3,
                     data_load_shuffle = True,
                     label_coloring = True,
                     save_colored_dir = './results/colored_img',
@@ -49,10 +49,10 @@ def create_arg_dict(
                     add_img_path = './data/raw_data/',
                     Not_TTC = 'None',
                     save_class_dir = './results/',
-                    treshhold = 0.0,
+                    treshhold = 0.75,
                     save_class_patches=False,
                     save_class_patches_path='./patches_A/',
-                    save_class_patches_mod='train',
+                    save_class_patches_mod='infer',
                     save_class_patches_class='Loki',
                     save_infer_img = True,
                     patches_mod = False,
