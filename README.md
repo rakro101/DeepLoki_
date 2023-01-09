@@ -6,7 +6,11 @@ We provide the code to enable you to to analyse/ classify Images in useful and t
 <br>
 # Installation Guide
 See https://github.com/
-
+'''
+brew install python@3.10
+pip3 install torch torchvision torchaudio
+pip3 install -r requirements.txt
+'''
 # Usage
 <br>
 The script always expects the following folder structure: train, test, val  and then the classes.
