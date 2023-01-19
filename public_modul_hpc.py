@@ -27,6 +27,8 @@ import logging
 from pathlib import Path
 from skimage.transform import resize
 
+#ToDo clear Medical stuff
+
 # create logger with 'spam_application'
 logger = logging.getLogger('loki')
 logger.setLevel(logging.DEBUG)

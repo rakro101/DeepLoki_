@@ -19,15 +19,20 @@ train_public_hpc.py - Script for Training a CNN form the list.
 <br>
 color_public_hpc.py - Use a trained CNN to classify & color the image patches.
 <br>
-
+To start the app just run the start_app.py
+<br>
 # Error Handling:
 Error -2 tempfile.tif: Cannot read TIFF header. conda install libtiff=4.1.0=h885aae3_4 -c conda-forge or  conda install -c anaconda libtiff<br>
 
 # TBC / Todo
-- Open Code for Hyperparametertuning
+- Currently working on the Pytorch Lightning Implementation
+- And the wandb integration
 
 # Latest features (08/2022)
 - train, coloring, automatic_cleaning, clean,
+
+# Authors
+Raphael Kronberg and Ellen Oldenburg
 
 # Support 
 If you **really** like this repository and find it useful, please consider (★) **starring** it, so that it can reach a broader audience of like-minded people. It would be highly appreciated !
