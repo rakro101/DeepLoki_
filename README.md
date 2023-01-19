@@ -5,7 +5,9 @@ Implemented in Python using the PyTorch Framework<br>
 We provide the code to enable you to to analyse/ classify Images in useful and trash  automatically and quickly.<br>
 <br>
 # Installation Guide
-See https://github.com/
+https://pytorch.org/get-started/locally/
+
+See https://github.com/rakro101/deeploki
 '''
 brew install python@3.10
 pip3 install torch torchvision torchaudio
