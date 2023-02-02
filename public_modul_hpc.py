@@ -596,6 +596,7 @@ class Trainer():
             num_w = 0
 
         data_transforms = {
+            # ToDo test with different conditions
             'train': transforms.Compose([
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
