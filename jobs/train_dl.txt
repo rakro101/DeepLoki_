@@ -17,8 +17,13 @@ module load Python/3.10.5
 
 module load PyTorch/1.13.0
 
+#[rakue101@hilbert330 ~]$ echo $PYTHONPATH
+#/software/pytorch/1.13.0/lib/python3.8/site-packages:/home/rakue101/.local/lib/python3.8/site-packages/:/home/rakue101/.local/lib/python3.10/site-packages/
+#[rakue101@hilbert330 ~]$ export PYTHONPATH=/software/pytorch/1.13.0/lib/python3.8/site-packages:/home/rakue101/.local/lib/python3.8/site-packages/
 
-cd cd /gpfs/project/projects/DeepLoki/deeploki/
+#[rakue101@hpc-login7 jobs]$ qstat -f 5424527.hpc-batch | grep exac
+#[rakue101@hpc-login7 jobs]$ ssh -X hilber330
+#cd cd /gpfs/project/projects/DeepLoki/deeploki/
 
 python train_public_hpc.py
 

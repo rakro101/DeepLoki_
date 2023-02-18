@@ -1,3 +1,4 @@
+import pandas as pd
 from parameter_holder_hpc import*
 import time
 __author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
@@ -8,7 +9,16 @@ __status__ = "Prototype: This progam/code can not be used as diagnostic tool."
 __credits__ = "Pls cite and refer to when using the code: Kronberg R.M.," \
               "Applications of Supervised Deep (Transfer) Learning for Medical Image Classification"
 
+
+def datestr():
+    ''' get the date for naming of files '''
+    temp_time = '{:04}_{:02}_{:02}__{:02}_{:02}_{:02}'.format(time.gmtime().tm_year, time.gmtime().tm_mon,
+                                                              time.gmtime().tm_mday, time.gmtime().tm_hour,
+                                                              time.gmtime().tm_min, time.gmtime().tm_sec)
+    return temp_time
+
 if __name__ == '__main__':
+    date = datestr()
     train_tile_classes = ['Amphipoda',
                              'Antenna',
                              'Artefact',
@@ -97,27 +107,106 @@ if __name__ == '__main__':
                              'Trochophora',
                              'multiples',
                              'NL']
-    arg_dict = create_arg_dict(reload=False,
+
+    arg_dict_data_load = create_arg_dict(reload=False,
                                add_img=False,
                                data_dir='data/data_set_001',#'./data/lowhangingfruits',
                                file_path_train='data/data_set_001', #'./data/lowhangingfruits',
                                result_file_name='data_set_001',
                                model_id='loki_data_set_001',
-                               model_name="vgg19",
+                               model_name="resnet",
                                tile_size=224,
                                optimizer_name='SGD',
                                train_tile_classes = train_tile_classes,
                                class_names =class_names,
-                               batch_size=256,
-                               num_epochs=50,
-                               learning_rate=0.00001,
-                               pixel_cutoff= 256,
-                               early_stop= 15,
-                               lr_step_size=1,
-                               gamma=0.99,
-                               num_train_layers= 19,
                                )
-    args = get_arguments(arg_dict)
+    args = get_arguments(arg_dict_data_load)
     T2 = Trainer(args)
-    T2.model_train()
+    data_dict = T2.get_that_tiles()
+    # init lists
+    model_name_list =[]
+    model_path_list = []
+    model_arch_list = []
+    model_opti_list = []
+    model_bs_list = []
+    model_lr_list = []
+    model_nl_list =[]
+    f1_score_list = []
+    precision_score_list = []
+    recall_score_list = []
+    roc_auc_score_list = []
+    balanced_accuracy_score_list = []
+    jacc_list = []
+    accuracy_score_list = []
+    T3 = 0
+    for model in ["effnet", "resnet152", "vitb"]:
+        for opti in ["ADAM"]:
+            for lrate in [0.0005, 0.0001, 0.001]:
+                for nl in [9, 21]:
+                    del T3
+                    if model == "effnet" or model == "vitb":
+                        bs = 64
+                    else:
+                        bs = 256
+                    arg_dict_train = create_arg_dict(reload=False,
+                                               add_img=False,
+                                               data_dir='data/data_set_001',#'./data/lowhangingfruits',
+                                               file_path_train='data/data_set_001', #'./data/lowhangingfruits',
+                                               result_file_name='data_set_001',
+                                               model_id='loki_data_set_001',
+                                               model_name=model,
+                                               tile_size=224,
+                                               optimizer_name=opti,
+                                               train_tile_classes = train_tile_classes,
+                                               class_names =class_names,
+                                               batch_size=bs,
+                                               num_epochs=50,
+                                               learning_rate=lrate,
+                                               pixel_cutoff= 256,
+                                               early_stop= 5,
+                                               lr_step_size=5,
+                                               gamma=0.95,
+                                               num_train_layers=nl,
+                                               )
+                    args_train = get_arguments(arg_dict_train)
+                    T3 = Trainer(args_train)
+                    a, b = T3.model_train(data_dict)
+                    model_name_list.append(model)
+                    model_path_list.append(a)
+                    model_arch_list.append(model)
+                    model_opti_list.append(opti)
+                    model_lr_list.append(lrate)
+                    model_nl_list.append(nl)
+                    model_bs_list.append(bs)
+                    f1_score_list.append(b[0])
+                    precision_score_list.append(b[1])
+                    recall_score_list.append(b[2])
+                    roc_auc_score_list.append(b[3])
+                    balanced_accuracy_score_list.append(b[4])
+                    jacc_list.append(b[5])
+                    accuracy_score_list.append(b[6])
+                    print(a,b)
+    try:
+        df = pd.DataFrame()
+        df = df.assign(**{"model_name":model_name_list,
+                     "path":model_path_list,
+                     "arch":model_arch_list,
+                     "optimizer":model_opti_list,
+                     "learningrate":model_lr_list,
+                     "tilesize": args_train.tile_size,
+                     "batch_size":model_bs_list,
+                     "lr_steps":args_train.lr_step_size,
+                     "num_train_layers":model_nl_list,
+                     "f1-score":f1_score_list,
+                     "precission":precision_score_list,
+                     "recall":recall_score_list,
+                     "roc_auc":roc_auc_score_list,
+                     "balanced_acc":balanced_accuracy_score_list,
+                     "jaccard":jacc_list,
+                     "accuracy":accuracy_score_list,
+                     })
 
+        df.to_csv(f"output/43_hyper_parameter_testing_grid_search_{date}.csv", sep=";")
+        print(df.head())
+    except Exception as err:
+        print(err)

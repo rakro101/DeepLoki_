@@ -39,7 +39,7 @@ def create_all_data_df(data_root_path):
     all_df_list = []
     for root, dirs, files in os.walk(data_root_path):
         for dir in dirs:
-            if dir.startswith('export') and not dir.startswith('export_2925'):
+            if dir.startswith('export'):
                 dir = os.path.join(root, dir)
                 for temp_root, temp_dirs, temp_files in os.walk(dir):
                     for name in temp_files:
@@ -135,18 +135,16 @@ def build_tvt(df_phase, run_id= "data_set_001"):
 if __name__ == '__main__':
     data_root_path = "data/export_data"
     all_df = create_all_data_df(data_root_path)
-    all_df.to_csv('output/allcruises_df.csv')
     validated_df = create_validate_df(all_df)
     overview_labels, overview_labels_100 = create_label_overview(validated_df)
-    dict_babsi = create_agg_labels(path ="data/combine_classes_for_training 2.csv")
+    dict_babsi = create_agg_labels(path ="data/combine_classes_for_training 3.csv")
     excluded = ['Badfocus','I_have_no_idea,_leave_out', 'Unknown','Doubles(???)', np.nan]
     validated_df_zero = create_validated_sub_data_set(validated_df,excluded)
     df_phase = create_data_split(validated_df_zero)
-    df_phase.to_csv('output/allcruises_df_validated.csv')
     list_of_folders = list(np.unique(validated_df_zero['label']))
     print(len(list_of_folders))
     tvt = ['train', 'val', 'test']
-    #create_folders(tvt, list_of_folders, run_id="data_set_004")
-    #build_tvt(df_phase, run_id="data_set_004")
+    create_folders(tvt, list_of_folders, run_id="data_set_003")
+    build_tvt(df_phase, run_id="data_set_003")
 
 

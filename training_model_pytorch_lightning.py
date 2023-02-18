@@ -79,8 +79,8 @@ class LitModel(pl.LightningModule):
         self.num_classes = num_classes
 
         # transfer learning if pretrained=True
-        #self.feature_extractor = models.resnet18(pretrained=transfer)
-        self.feature_extractor = models.efficientnet_v2_l(pretrained=transfer)
+        self.feature_extractor = models.resnet18(pretrained=transfer)
+        #self.feature_extractor = models.efficientnet_v2_l(pretrained=transfer)
 
         if transfer:
             # layers are frozen by using eval()

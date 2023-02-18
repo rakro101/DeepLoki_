@@ -22,7 +22,7 @@ import getpass
 #import normalizeStaining as ns
 import itertools
 import re
-from sklearn.metrics import roc_auc_score, f1_score,precision_score, recall_score,balanced_accuracy_score,jaccard_score, classification_report
+from sklearn.metrics import roc_auc_score, accuracy_score, f1_score,precision_score, recall_score,balanced_accuracy_score,jaccard_score, classification_report
 import logging
 from pathlib import Path
 from skimage.transform import resize
@@ -206,7 +206,7 @@ class Trainer():
         return None
 
 
-    def model_maker(self):
+    def model_maker(self, data_dict= None):
         '''
         Init the model, the dataloader, the optimizer, the loss function adn the lr sheduler
         :param reload: switch for analyze and training
@@ -216,7 +216,11 @@ class Trainer():
         '''
         self.print_cuda()
         if self.dont_save_tiles == 'yes' and not self.reload:
-            self.get_that_tiles()
+            if data_dict:
+                print('data already loaded', '#'*20)
+                pass
+            else:
+                self.get_that_tiles()
         else:
             self.img_data_dict = None
 
@@ -242,12 +246,14 @@ class Trainer():
         self.initialize_scheduler()
 
 
-    def model_train(self):
+    def model_train(self, data_dict = None):
         '''
         Init the model for training
         '''
         # create the model
-        self.model_maker()
+        if data_dict:
+            self.img_data_dict = data_dict
+        self.model_maker(data_dict)
         # train the model
         return self.train_model()
 
@@ -273,6 +279,10 @@ class Trainer():
         val_acc_history = []
         best_model_wts = copy.deepcopy(self.model_ft.state_dict())
         best_acc = 0.0
+        if torch.cuda.is_available():
+            import gc
+            torch.cuda.empty_cache()
+            gc.collect()
         # params
         not_improved_count = 0
         test_data_store = []
@@ -411,7 +421,8 @@ class Trainer():
                 y_true = test_labels.cpu().detach().numpy().astype(int)
                 y_pred = test_preds.argmax(dim=1).cpu().detach().numpy().astype(int)
                 y_scori = sm(test_preds).cpu().detach().numpy()
-                cm =confusion_matrix(y_true,y_pred, labels = [b for b in range(0,len(self.train_tile_classes))])
+                label_cm = [b for b in range(0,len(self.train_tile_classes))]
+                cm =confusion_matrix(y_true,y_pred, labels=label_cm)
                 print(cm)
                 print(self.args_printer(self.args), 'Args')
                 logger.info((self.args_printer(self.args)))
@@ -424,7 +435,7 @@ class Trainer():
                     import matplotlib.pyplot as plt
                     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = self.train_tile_classes)#
                     disp.plot()
-                    plt.savefig('./logs/{}_confusion_matrix.jpg'.format(self.datestr()))
+                    plt.savefig('./logs/{}_{}confusion_matrix.jpg'.format(self.model_name,self.datestr()))
                     plt.show()
                 print('Warning the confusion matrix need validation')
 
@@ -443,6 +454,12 @@ class Trainer():
             print(type(self.model_ft))
             for param in self.model_ft.parameters():
                 param.requires_grad = False
+    def create_class(self, num_ftrs, num_classes):
+        return torch.nn.Sequential(
+                                torch.nn.Dropout(p=0.2, inplace=True),
+                                torch.nn.Linear(in_features=num_ftrs,
+                                out_features=self.num_classes,
+                                bias=True))
 
     def initialize_model(self, ):
         ''' Here intialize the layers new, we want to train'''
@@ -453,80 +470,80 @@ class Trainer():
         if self.model_name == "resnet":
             """ Resnet18
             """
-            self.model_ft = models.resnet18(weights=self.use_pretrained)
+            self.model_ft = models.resnet18(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.fc = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "resnet50":
             """ Resnet50
             """
-            self.model_ft = models.resnet50(weights=self.use_pretrained)
+            self.model_ft = models.resnet50(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.fc = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "resnet101":
             """ Resnet101
             """
-            self.model_ft = models.resnet101(weights=self.use_pretrained)
+            self.model_ft = models.resnet101(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.fc = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "resnet152":
             """ Resnet152
             """
-            self.model_ft = models.resnet152(weights=self.use_pretrained)
+            self.model_ft = models.resnet152(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.fc = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "alexnet":
             """ Alexnet
             """
-            self.model_ft = models.alexnet(weights=self.use_pretrained)
+            self.model_ft = models.alexnet(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
-            self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.classifier[6] = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "vgg":
             """ VGG11_bn
             """
-            self.model_ft = models.vgg11_bn(weights=self.use_pretrained)
+            self.model_ft = models.vgg11_bn(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
-            self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.classifier[6] = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "vgg16":
             """ VGG16_bn
             """
-            self.model_ft = models.vgg16_bn(weights=self.use_pretrained)
+            self.model_ft = models.vgg16_bn(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
-            self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.classifier[6] = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "vgg19":
             """ VGG19_bn
             """
-            self.model_ft = models.vgg19_bn(weights=self.use_pretrained)
+            self.model_ft = models.vgg19_bn(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier[6].in_features
-            self.model_ft.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.classifier[6] = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
 
         elif self.model_name == "squeezenet":
             """ Squeezenet
             """
-            self.model_ft = models.squeezenet1_0(weights=self.use_pretrained)
+            self.model_ft = models.squeezenet1_0(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             self.model_ft.classifier[1] = nn.Conv2d(512, self.num_classes, kernel_size=(1, 1), stride=(1, 1))
             self.model_ft.num_classes = self.num_classes
@@ -535,17 +552,63 @@ class Trainer():
         elif self.model_name == "densenet":
             """ Densenet
             """
-            self.model_ft = models.densenet121(weights=self.use_pretrained)
+            self.model_ft = models.densenet121(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             num_ftrs = self.model_ft.classifier.in_features
-            self.model_ft.classifier = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.classifier = self.create_class(num_ftrs, self.num_classes)
+            self.input_size = 224
+
+        elif self.model_name == "effnet":
+            """ Effnet
+            """
+            self.model_ft = models.efficientnet_v2_l(pretrained=self.use_pretrained)
+            self.set_parameter_requires_grad()
+            #model = torchvision.models.efficientnet_b5()
+            num_ftrs = self.model_ft.classifier[1].in_features
+            self.model_ft.classifier = self.create_class(num_ftrs, self.num_classes)
+            self.input_size = 224
+
+        elif self.model_name == "vitb":
+            """ VIT
+            """
+            self.model_ft = models.vit_b_16(pretrained=self.use_pretrained)
+            from torchinfo import summary
+            s = summary(self.model_ft,
+                    input_size=(32, 3, 224, 224),  # make sure this is "input_size", not "input_shape"
+                    # col_names=["input_size"], # uncomment for smaller output
+                    col_names=["input_size", "output_size", "num_params", "trainable"],
+                    col_width=20,
+                    row_settings=["var_names"]
+                    )
+            print(s)
+            self.set_parameter_requires_grad()
+            num_ftrs = 768
+            self.model_ft.classifier = self.create_class(num_ftrs, self.num_classes)
+            self.input_size = 224
+
+        elif self.model_name == "vitl":
+            """ VIT
+            """
+            self.model_ft = models.vit_l_16(pretrained=self.use_pretrained)
+            from torchinfo import summary
+            s = summary(self.model_ft,
+                    input_size=(32, 3, 224, 224),  # make sure this is "input_size", not "input_shape"
+                    # col_names=["input_size"], # uncomment for smaller output
+                    col_names=["input_size", "output_size", "num_params", "trainable"],
+                    col_width=20,
+                    row_settings=["var_names"]
+                    )
+            print(s)
+            self.set_parameter_requires_grad()
+            num_ftrs = 1024
+            self.model_ft.classifier = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 224
 
         elif self.model_name == "inception":
             """ Inception v3
             Be careful, expects (299,299) sized images and has auxiliary output
             """
-            self.model_ft = models.inception_v3(weights=self.use_pretrained)
+            self.model_ft = models.inception_v3(pretrained=self.use_pretrained)
             self.set_parameter_requires_grad()
             #set_parameter_requires_grad(model_ft, feature_extract)
             # Handle the auxilary net
@@ -553,7 +616,7 @@ class Trainer():
             self.model_ft.AuxLogits.fc = nn.Linear(num_ftrs, self.num_classes)
             # Handle the primary net
             num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, self.num_classes)
+            self.model_ft.fc = self.create_class(num_ftrs, self.num_classes)
             self.input_size = 299
             self.is_inception = True
 
@@ -602,12 +665,12 @@ class Trainer():
                 transforms.RandomVerticalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-                transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
-                transforms.RandomAutocontrast(p=0.5),
-                transforms.RandomEqualize(p=0.5),
-                transforms.RandomPerspective(distortion_scale=0.5, p=0.5),
-                transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.5),
-                transforms.RandomPosterize(bits=4, p=0.5)
+                #transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
+                transforms.RandomAutocontrast(p=0.25),
+                # transforms.RandomEqualize(p=0.5),
+                transforms.RandomPerspective(distortion_scale=0.25, p=0.25),
+                transforms.RandomAdjustSharpness(sharpness_factor=4, p=0.25),
+                #transforms.RandomPosterize(bits=4, p=0.5)
 
             ]),
             'val': transforms.Compose([
@@ -626,12 +689,18 @@ class Trainer():
         self.data_transforms = data_transforms
         print("Initializing Datasets and Dataloaders...")
         if self.img_data_dict:
-            self.dataloader_dict = {
-                x: torch.utils.data.DataLoader(
-                    FromDict2Dataset(self.img_data_dict, phase=x, class_names=self.class_names,
-                                     transform=data_transforms[x]),
-                    batch_size=self.batch_size, shuffle=self.data_load_shuffle,
-                    num_workers=num_w) for x in self.modi}
+            try:
+                self.dataloader_dict = {
+                    x: torch.utils.data.DataLoader(
+                        FromDict2Dataset(self.img_data_dict, phase=x, class_names=self.class_names,
+                                         transform=data_transforms[x]),
+                        batch_size=self.batch_size, shuffle=self.data_load_shuffle,
+                        num_workers=num_w) for x in self.modi}
+            except Exception as err:
+                print(num_w)
+                print(self.class_names)
+                print('################# 666 #######################')
+                print(err)
 
         else:
             # Create training and validation datasets
@@ -797,6 +866,7 @@ class Trainer():
                 c[TTC] = Collector
             d[TVT] = c
 
+
         for clas in self.train_tile_classes:
             print('test Number of patches for {}:'.format(clas), len(d['test'][clas]))
             print('train Number of patches for {}:'.format(clas), len(d['train'][clas]))
@@ -807,6 +877,7 @@ class Trainer():
             logger.info(('val Number of patches for {}:'.format(clas), len(d['val'][clas])))
             logger.info(('total Number of patches for {}:'.format(clas), len(d['test'][clas])+len(d['train'][clas])+len(d['val'][clas])))
         self.img_data_dict = d
+        return d
 
 
     def get_that_tiles_Arr_dict_new(self, imgNr):
@@ -869,7 +940,7 @@ class Trainer():
                     if (self.class_names[preds[0]] == self.Not_TTC):
                         self.c_c_counter += 1
                         self.array_img_save(H=inputs.squeeze(0), dir_out=self.save_class_dir,
-                                            filename='{}.tif'.format(self.c_c_counter))
+                                            filename='{}.png'.format(self.c_c_counter))
                     out = torchvision.utils.make_grid(inputs)
                     for j in range(inputs.size()[0]):
                         if np.sum(sm(outputs).cpu().numpy(), axis=0)[preds.item()] >= self.treshhold:  # ToDo #30.08.2021
@@ -1160,15 +1231,20 @@ class Trainer():
     def calc_metrics_fl(self, y_scori, y_true, y_pred):
         ''' function to calc and print different classification metrics '''
         # https://scikit-learn.org/stable/modules/model_evaluation.html
-        lab_temp = [b for b in range(0, len(self.train_tile_classes))]
+        # lab_temp = [b for b in range(0, len(self.train_tile_classes))]
+        lab_temp = self.train_tile_classes
         # Jaccard score
         print('Jaccard Score for each class {}'.format(jaccard_score(y_true, y_pred, average=None)))
         logger.info(('Jaccard Score for each class {}'.format(jaccard_score(y_true, y_pred, average=None))))
         # Classification Report
-        print(classification_report(y_true, y_pred, labels=lab_temp))
-        logger.info((classification_report(y_true, y_pred, labels=lab_temp)))
-
+        try:
+            print(classification_report(y_true, y_pred, labels=lab_temp))
+            logger.info((classification_report(y_true, y_pred, labels=lab_temp)))
+        except Exception as err:
+            print(err)
+            logger.info(err)
         if len(self.train_tile_classes) != 2:
+            acc = accuracy_score(y_true, y_pred)
             f = f1_score(y_true, y_pred, labels=None,  average='weighted', sample_weight=None,
                                      zero_division='warn')
 
@@ -1190,9 +1266,10 @@ class Trainer():
             print('roc_auc_score', r2)
             print('balanced accuracy', ba)
             print('jaccard score', js )
-            ret = [f,p,r1,r2,ba,js]
+            print('acc score', acc)
+            ret = [f,p,r1,r2,ba,js, acc]
         else:
-            ret = [0, 0, 0, 0, 0, 0]
+            ret = [0, 0, 0, 0, 0, 0, 0]
             print('only 2 classes so noch ovr metrics')
             logger.info(('Only 2 classes no multiscore metrics'))
         return ret

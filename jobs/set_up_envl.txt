@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=8:ngpus=1:accelerator_model=rtx8000:mem=200gb
+#PBS -l walltime=00:59:00
+#PBS -A "DeepLoki"
+#PBS -m abe 
+#PBS -M raphael.kronberg@hhu.de
+
+set -e
+
+echo "Start" 
+
+date
+
+module load CUDA/11.7.1
+
+module load Python/3.10.5
+
+export PIP_CONFIG_FILE=/software/python/pip.conf
+
+pip3 install torch torchvision torchaudio
+
+cd cd /gpfs/project/projects/DeepLoki/deeploki/
+
+python train_public_hpc.py
+
+date
+echo "Ende"

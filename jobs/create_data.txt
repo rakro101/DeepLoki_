@@ -13,9 +13,15 @@ date
 
 module load Python/3.10.5
 
+module avail 2>&1 | grep -i numpy
+
+module avail 2>&1 | grep -i pandas
+
+module avail 2>&1 | grep -i scikit-learn
+
 cd /gpfs/project/projects/DeepLoki/deeploki/
 
-python create_data.py
+python create_data_csv.py
 
 date
 echo "Ende"

@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=8:ngpus=1:accelerator_model=rtx8000:mem=500gb
+#PBS -l walltime=47:59:00
+#PBS -A "DeepLoki"
+#PBS -m abe
+#PBS -M raphael.kronberg@hhu.de
+
+set -e
+
+echo "Start"
+
+date
+
+module load CUDA/11.1.0
+
+module load Python/3.6.5
+
+module load PyTorch/1.8.0
+
+export PYTHONPATH=/home/rakue101/.local/lib/python3.6/site-packages:$PYTHONPATH
+
+cd /gpfs/project/rakue101/loki/deeploki/
+
+python train_public_hpc.py
+
+date
+echo "Ende"
