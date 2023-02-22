@@ -39,7 +39,7 @@ def create_all_data_df(data_root_path):
     all_df_list = []
     for root, dirs, files in os.walk(data_root_path):
         for dir in dirs:
-            if dir.startswith('export') and not dir.startswith('export_2925'):
+            if dir.startswith('export') and not dir.startswith('export_5008'):
                 dir = os.path.join(root, dir)
                 for temp_root, temp_dirs, temp_files in os.walk(dir):
                     for name in temp_files:
@@ -68,7 +68,7 @@ def create_label_overview(validated_df):
     overview_labels_100.to_csv('output/combine_classes_for_training.csv', sep=";")
     return overview_labels, overview_labels_100
 
-def create_agg_labels(path ="data/combine_classes_for_training 2.csv"):
+def create_agg_labels(path ="data/combine_classes_for_training_2.csv"):
     df_babsi = pd.read_csv(path, sep=";")
     df_babsi["Taxon II"] = df_babsi["Taxon II"].apply(is_na_then_empty)
     df_babsi["Taxon III/part of organism"] = df_babsi["Taxon III/part of organism"].apply(is_na_then_empty)
@@ -92,7 +92,7 @@ def create_validated_sub_data_set(validated_df,excluded):
     print(validated_df_zero.shape)
     validated_df_zero= validated_df_zero.drop(validated_df_drop.index)
     print(validated_df_zero.shape)
-    validated_df_zero.to_csv('data_csv/data_run_001.csv',sep =";")
+    validated_df_zero.to_csv('data_csv/data_run_004.csv',sep =";")
     return validated_df_zero
 
 def create_data_split(validated_df_zero):
@@ -135,18 +135,18 @@ def build_tvt(df_phase, run_id= "data_set_001"):
 if __name__ == '__main__':
     data_root_path = "data/export_data"
     all_df = create_all_data_df(data_root_path)
-    all_df.to_csv('output/allcruises_df.csv')
+    all_df.to_csv('output/allcruises_df_5with_zoomie.csv')
     validated_df = create_validate_df(all_df)
     overview_labels, overview_labels_100 = create_label_overview(validated_df)
-    dict_babsi = create_agg_labels(path ="data/combine_classes_for_training 2.csv")
+    dict_babsi = create_agg_labels(path ="combine_classes_for_training_2.csv")
     excluded = ['Badfocus','I_have_no_idea,_leave_out', 'Unknown','Doubles(???)', np.nan]
     validated_df_zero = create_validated_sub_data_set(validated_df,excluded)
     df_phase = create_data_split(validated_df_zero)
-    df_phase.to_csv('output/allcruises_df_validated.csv')
+    df_phase.to_csv('output/allcruises_df_validated_5with_zoomie.csv')
     list_of_folders = list(np.unique(validated_df_zero['label']))
     print(len(list_of_folders))
-    tvt = ['train', 'val', 'test']
-    #create_folders(tvt, list_of_folders, run_id="data_set_004")
-    #build_tvt(df_phase, run_id="data_set_004")
+    #tvt = ['train', 'val', 'test']
+    #create_folders(tvt, list_of_folders, run_id="data_set_005")
+    #build_tvt(df_phase, run_id="data_set_005")
 
 

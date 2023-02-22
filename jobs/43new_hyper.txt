@@ -1,0 +1,35 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=8:ngpus=1:accelerator_model=a100:mem=500gb
+#PBS -l walltime=47:59:00
+#PBS -A "DeepLoki"
+#PBS -m abe
+#PBS -M raphael.kronberg@hhu.de
+
+set -e
+
+echo "Start"
+
+date
+
+module load CUDA/11.7.1
+module load cuDNN/8.7.0
+module load Python/3.10.5
+
+export PIP_CONFIG_FILE=/software/python/pip.conf
+
+# pip3 install numpy
+# pip3 install pandas
+# pip3 install --upgrade --no-deps --force-reinstall torch torchvision
+# pip3 install matplotlib
+# pip3 install scikit-learn
+# pip3 install Pillow
+# pip3 install scikit-image
+
+export PYTHONPATH=/home/rakue101/.local/lib/python3.10/site-packages:$PYTHONPATH
+
+cd /gpfs/project/rakue101/loki/deeploki/
+
+python train_public_hpc_hyper_new.py
+
+date
+echo "Ende"

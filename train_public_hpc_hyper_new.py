@@ -18,6 +18,7 @@ def datestr():
     return temp_time
 
 if __name__ == '__main__':
+    time.sleep(60*60*2)
     date = datestr()
     train_tile_classes = ['Amphipoda',
                              'Antenna',
@@ -110,10 +111,10 @@ if __name__ == '__main__':
 
     arg_dict_data_load = create_arg_dict(reload=False,
                                add_img=False,
-                               data_dir='data/data_set_001',#'./data/lowhangingfruits',
-                               file_path_train='data/data_set_001', #'./data/lowhangingfruits',
-                               result_file_name='data_set_001',
-                               model_id='loki_data_set_001',
+                               data_dir='data/data_set_004',#'./data/lowhangingfruits',
+                               file_path_train='data/data_set_004', #'./data/lowhangingfruits',
+                               result_file_name='data_set_004',
+                               model_id='loki_data_set_004',
                                model_name="resnet",
                                tile_size=224,
                                optimizer_name='SGD',
@@ -139,10 +140,10 @@ if __name__ == '__main__':
     jacc_list = []
     accuracy_score_list = []
     T3 = 0
-    for model in ["vgg19", "effnet", "resnet50", "vitb"]:
+    for model in ["resnet152"]:
         for opti in ["ADAM"]:
-            for lrate in [0.0001, 0.001]:
-                for nl in [3]:
+            for lrate in [0.0001, 0.001, 0.01]:
+                for nl in [1,3,6,9]:
                     del T3
                     if model == "effnet" or model == "vitb":
                         bs = 128
@@ -150,10 +151,10 @@ if __name__ == '__main__':
                         bs = 256
                     arg_dict_train = create_arg_dict(reload=False,
                                                add_img=False,
-                                               data_dir='data/data_set_001',#'./data/lowhangingfruits',
-                                               file_path_train='data/data_set_001', #'./data/lowhangingfruits',
-                                               result_file_name='data_set_001',
-                                               model_id='loki_data_set_001',
+                                               data_dir='data/data_set_004',#'./data/lowhangingfruits',
+                                               file_path_train='data/data_set_004', #'./data/lowhangingfruits',
+                                               result_file_name='data_set_004',
+                                               model_id='loki_data_set_004',
                                                model_name=model,
                                                tile_size=224,
                                                optimizer_name=opti,

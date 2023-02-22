@@ -1,6 +1,6 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=8:mem=100gb
-#PBS -l walltime=01:59:00
+#PBS -l select=1:ncpus=8:mem=300gb
+#PBS -l walltime=05:59:00
 #PBS -A "DeepLoki"
 #PBS -m abe 
 #PBS -M raphael.kronberg@hhu.de
@@ -11,15 +11,20 @@ echo "Start"
 
 date
 
-module load Python/3.10.5
+module load Python/3.6.5
 
-module avail 2>&1 | grep -i numpy
+export PYTHONPATH=/home/rakue101/.local/lib/python3.6/site-packages:$PYTHONPATH
 
-module avail 2>&1 | grep -i pandas
+export PIP_CONFIG_FILE=/software/python/pip.conf
 
-module avail 2>&1 | grep -i scikit-learn
+# pip3 install numpy
+# pip3 install pandas
+# pip3 install matplotlib
+# pip3 install scikit-learn
 
-cd /gpfs/project/projects/DeepLoki/deeploki/
+# cp -R /gpfs/project/projects/DeepLoki/deeploki/data/export_data /gpfs/project/rakue101/loki/deeploki/data/
+
+cd /gpfs/project/rakue101/loki/deeploki/
 
 python create_data_csv.py
 
