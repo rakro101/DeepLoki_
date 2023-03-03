@@ -16,6 +16,8 @@ from pytorch_lightning import seed_everything
 import sys
 from pytorch_lightning.callbacks import EarlyStopping
 
+
+
 torch.manual_seed(42)
 seed = seed_everything(42, workers=True)
 
@@ -178,7 +180,7 @@ class LokiDataModule(pl.LightningDataModule):
         dataset = LokiDataset()
         # split dataset
         noi = int(0.1*len(dataset))
-        self.train, self.val ,self.test = random_split(dataset,[7*noi, int(1.5*noi), int(1.5*noi), len(dataset)-10*noi])[0:3]
+        self.train, self.val ,self.test = random_split(dataset,[int(7*noi), int(1.5*noi), int(1.5*noi), len(dataset)-int(7*noi)-2*int(1.5*noi)])[0:3]
 
         self.train.dataset.img_transform = self.augmentation
         self.val.dataset.img_transform = self.transform
@@ -209,8 +211,10 @@ class LitModel(pl.LightningModule):
         self.print_cuda()
         if arch == "resnet18":
             self.feature_extractor = models.resnet18(pretrained=transfer)
-        elif arch == "vgg19":
-            self.feature_extractor = models.vgg19(pretrained=transfer)
+        elif arch == "vgg16":
+            self.feature_extractor = models.vgg16(pretrained=transfer)
+        elif arch == "vitb":
+            self.feature_extractor = models.vit_b_16(pretrained=transfer)
         #self.feature_extractor = models.efficientnet_v2_l(pretrained=transfer)
         self.save_hyperparameters()
         if transfer:
@@ -228,7 +232,7 @@ class LitModel(pl.LightningModule):
         self.feature_dim = 43
         self.classifier = nn.Linear(n_sizes+self.feature_dim, num_classes)
         self.feature_part = nn.Sequential(
-          nn.Linear(83,50),#nn.Linear(91,50),
+          nn.Linear(77,50),#nn.Linear(91,50),
           nn.BatchNorm1d(num_features=50),
           nn.Dropout(p=0.05),
           nn.ReLU(),
@@ -347,8 +351,8 @@ class LitModel(pl.LightningModule):
 if __name__ == '__main__':
     bs_fit = False
     lr_fit = False
-    dm = LokiDataModule(batch_size=256)
-    model = LitModel((3, 400, 400), 43, transfer=True, num_train_layers=3, learning_rate=0.00052, arch="vgg19")
+    dm = LokiDataModule(batch_size=16)
+    model = LitModel((3, 224, 224), 43, transfer=True, num_train_layers=1, learning_rate=0.00052, arch="vitb")
     #trainer = pl.Trainer(max_epochs=25, accelerator="mps", devices="auto", deterministic=True)
     if bs_fit:
         trainer=pl.Trainer(max_epochs=1, accelerator="mps", devices="auto", deterministic=True, auto_scale_batch_size=True)
@@ -357,7 +361,7 @@ if __name__ == '__main__':
         trainer=pl.Trainer(max_epochs=1, accelerator="mps", devices="auto", deterministic=True, auto_lr_find=True)
         trainer.tune(model,dm)
     else:
-        trainer = pl.Trainer(max_epochs=50, accelerator="mps", devices="auto", deterministic=True, callbacks=[EarlyStopping("val/loss", patience=5, mode="min")])
+        trainer = pl.Trainer(max_epochs=20, accelerator="mps", devices="auto", deterministic=True, callbacks=[EarlyStopping("val/loss", patience=5, mode="min")])
         trainer.fit(model, dm)
         trainer.validate(model, dm)
         trainer.test(model, dm)

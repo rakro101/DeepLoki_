@@ -1,0 +1,35 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=8:ngpus=1:accelerator_model=a100:mem=500gb
+#PBS -l walltime=47:59:00
+#PBS -A "DeepLoki"
+#PBS -m abe
+#PBS -M raphael.kronberg@hhu.de
+
+set -e
+
+echo "Start"
+
+date
+
+module load PyTorch_Lightning/1.13.0
+
+#export PIP_CONFIG_FILE=/software/python/pip.conf
+
+#export PYTHONPATH=/home/rakue101/.local/lib/python3.9/site-packages:$PYTHONPATH
+
+#pip3 install numpy
+#pip3 install pandas
+#pip3 install matplotlib
+#pip3 install scikit-learn
+#pip3 install Pillow
+#pip3 install scikit-image
+#pip3 install lightly
+#pip3 install torch torchvision
+#pip3 install pytorch-lightning
+
+cd /gpfs/project/rakue101/loki/deeploki/
+
+python pretrain_with_dino.py
+
+date
+echo "Ende"
