@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=8:ngpus=1:accelerator_model=a100:mem=500gb
+#PBS -l select=1:ncpus=32:ngpus=8:accelerator_model=a100:mem=1000gb
 #PBS -l walltime=47:59:00
 #PBS -A "DeepLoki"
 #PBS -m abe
@@ -26,6 +26,9 @@ module load PyTorch_Lightning/1.13.0
 #pip3 install lightly
 #pip3 install torch torchvision
 #pip3 install pytorch-lightning
+
+export CUDA_DEVICE_ORDER="PCI_BUS_ID"
+export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
 
 cd /gpfs/project/rakue101/loki/deeploki/
 

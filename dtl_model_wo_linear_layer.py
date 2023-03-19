@@ -25,8 +25,6 @@ class DtlModel(pl.LightningModule):
             self.feature_extractor = models.vgg16(pretrained=transfer)
         elif arch == "vitb":
             self.feature_extractor = models.vit_b_16(pretrained=transfer)
-        elif arch == "effnet":
-            self.feature_extractor = models.efficientnet_v2_s(pretrained=transfer)
         elif arch == "resnet_dino":
             model = models.resnet18()
             c_path = "saved_models/epoch=299-step=34200.ckpt"
@@ -81,7 +79,7 @@ class DtlModel(pl.LightningModule):
     def forward(self, x):
        x = self._forward_features(x)
        x = x.view(x.size(0), -1)
-       x = self.classifier(x)
+       #x = self.classifier(x)
        return x
 
     def training_step(self, batch):

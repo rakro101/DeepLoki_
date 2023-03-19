@@ -24,6 +24,13 @@ class LokiTrainValDataset(Dataset):
         self.df_abt = self.df_abt[self.df_abt["object_cruise"] != "PS99.2"]
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]# remove artefact
         self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id'],axis=1)
+        # num features
+        self.numeric_columns = self.df_abt.select_dtypes(include='number').columns
+        self.numeric_columns = self.df_abt[self.numeric_columns].dropna(axis =1, how='all').columns
+        self.imputer_num = SimpleImputer(missing_values=np.nan, strategy='mean')
+        self.imputer_num.set_output(transform="pandas")
+        print('cols feature train val', self.df_abt[self.numeric_columns].shape)
+        self.features = torch.Tensor(self.imputer_num.fit_transform(self.df_abt[self.numeric_columns]).values)
         self.label_encoder = preprocessing.LabelEncoder()
         self.image_root = self.df_abt['root_path'].values
         self.image_path = self.df_abt['img_file_name'].values
@@ -40,20 +47,24 @@ class LokiTrainValDataset(Dataset):
     def __getitem__(self, item):
         img_path = os.path.join(self.image_root[item], self.image_path[item])
         image = Image.open(img_path).convert('RGB')
-
+        feature = self.features[item]
         label = self.label[item]
         if self.img_transform:
             image = self.img_transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        return image, label
+        return image, feature, label
 
 class LokiTestDataset(Dataset):
-    def __init__(self, img_transform=None, target_transform=None, label_encoder=None):
+    def __init__(self, img_transform=None, target_transform=None, label_encoder=None, numeric_columns = None, imputer_num = None,):
         self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023.csv")
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]  # remove artefact
         self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id'],axis=1)
         self.label_encoder = label_encoder
+        self.numeric_columns = numeric_columns
+        self.imputer_num = imputer_num
+        print('cols feature test', self.df_abt[self.numeric_columns].shape)
+        self.features = torch.Tensor(self.imputer_num.transform(self.df_abt[self.numeric_columns]).values)
         self.image_root = self.df_abt['root_path'].values
         self.image_path = self.df_abt['img_file_name'].values
         self.label = torch.Tensor(self.label_encoder.transform(self.df_abt['label'])).type(torch.LongTensor)
@@ -66,13 +77,13 @@ class LokiTestDataset(Dataset):
     def __getitem__(self, item):
         img_path = os.path.join(self.image_root[item], self.image_path[item])
         image = Image.open(img_path).convert('RGB')
-
+        feature = self.features[item]
         label = self.label[item]
         if self.img_transform:
             image = self.img_transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        return image, label
+        return image,  feature, label
 
 
 class LokiDataModule(pl.LightningDataModule):
@@ -83,7 +94,9 @@ class LokiDataModule(pl.LightningDataModule):
         # build dataset
         train_val_dataset = LokiTrainValDataset()
         encoder_train = train_val_dataset.label_encoder
-        test_dataset = LokiTestDataset(label_encoder=encoder_train)
+        numeric_columns = train_val_dataset.numeric_columns
+        imputer_num = train_val_dataset.imputer_num
+        test_dataset = LokiTestDataset(label_encoder=encoder_train, numeric_columns=numeric_columns, imputer_num=imputer_num)
         # split dataset
         number_of_samples =len(train_val_dataset)
         n_train_samples =int(0.8*number_of_samples)

@@ -135,14 +135,14 @@ def build_tvt(df_phase, run_id= "data_set_001"):
 if __name__ == '__main__':
     data_root_path = "data/ecoTaxa"
     all_df = create_all_data_df(data_root_path)
-    all_df.to_csv('output/df_ecoTaxa_dataPS99.csv')
+    all_df.to_csv('output/df_ecoTaxa_dataPS99_0230303.csv')
     validated_df = create_validate_df(all_df)
     overview_labels, overview_labels_100 = create_label_overview(validated_df)
-    dict_babsi = create_agg_labels(path ="combine_classes_for_training_2.csv")
+    dict_babsi = create_agg_labels(path ="data/combine_classes_for_training_20230303.csv")
     excluded = ['Badfocus','I_have_no_idea,_leave_out', 'Unknown','Doubles(???)', np.nan]
     validated_df_zero = create_validated_sub_data_set(validated_df,excluded)
     df_phase = create_data_split(validated_df_zero)
-    df_phase.to_csv('output/ecoTaxa_dataPS992.csv')
+    df_phase.to_csv('output/ecoTaxa_dataPS992_0230303.csv')
     list_of_folders = list(np.unique(validated_df_zero['label']))
     print(len(list_of_folders))
     #tvt = ['train', 'val', 'test']
