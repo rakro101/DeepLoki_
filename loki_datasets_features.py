@@ -23,7 +23,7 @@ class LokiTrainValDataset(Dataset):
         self.df_abt = pd.read_csv('output/update_allcruises_df_validated_5with_zoomie_20230303.csv')
         self.df_abt = self.df_abt[self.df_abt["object_cruise"] != "PS99.2"]
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]# remove artefact
-        self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id'],axis=1)
+        self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id','new_index'],axis=1)
         # num features
         self.numeric_columns = self.df_abt.select_dtypes(include='number').columns
         self.numeric_columns = self.df_abt[self.numeric_columns].dropna(axis =1, how='all').columns
