@@ -74,7 +74,7 @@ if __name__ == '__main__':
         print(all_cls)
 
         clsf_report = pd.DataFrame(classification_report(y_true = gt, y_pred = pred, output_dict=True)).transpose()
-        clsf_report.to_csv(f"paper/tables/Dino_{run_prefix}_lightning_class_report.csv", sep=";")
+        clsf_report.to_csv(f"paper/tables/SSV_Dino_{run_prefix}_resnet18_class_report.csv", sep=";")
         print(clsf_report)
 
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         #fig_rf.suptitle('Plot of confusion matrix')
         plt.xticks(rotation='vertical')
         plt.tight_layout()
-        plt.savefig(f'paper/figures/Dino_{run_prefix}resnet_combon_model_sklearn_confusion_matrix.jpg')
+        plt.savefig(f'paper/figures/SSV_Dino_{run_prefix}_resnet_18__confusion_matrix.jpg')
         plt.show()
 
 

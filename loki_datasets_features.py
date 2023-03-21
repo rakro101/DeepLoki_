@@ -57,7 +57,8 @@ class LokiTrainValDataset(Dataset):
 
 class LokiTestDataset(Dataset):
     def __init__(self, img_transform=None, target_transform=None, label_encoder=None, numeric_columns = None, imputer_num = None,):
-        self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023.csv")
+        #self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023.csv")
+        self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023_nicole.csv")
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]  # remove artefact
         self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id'],axis=1)
         self.label_encoder = label_encoder
