@@ -33,7 +33,7 @@ if __name__ == '__main__':
     num_classes = tv_dl.n_classes
     print(num_classes)
     le = tv_dl.label_encoder
-    model = DtlModel(input_shape=(3,300,300), num_classes=num_classes, arch="resnet_dino")
+    model = DtlModel(input_shape=(3,300,300), num_classes=num_classes, arch="resnet_dino", label_encoder=le)
     #c_path ="lightning_logs/version_60/checkpoints/epoch=2-step=912.ckpt" #paperversion
     c_path = "lightning_logs/version_68/checkpoints/epoch=0-step=608.ckpt"
     checkpoint = torch.load(c_path)

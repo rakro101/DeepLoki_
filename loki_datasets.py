@@ -102,7 +102,8 @@ class LokiDataModule(pl.LightningDataModule):
               transforms.RandomRotation(degrees=15),
               transforms.RandomHorizontalFlip(),
               transforms.CenterCrop(size=224),
-              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225]),
+              transforms.RandomInvert(p=1),
+              #transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225]),
               transforms.RandomAutocontrast(p=0.25),
               transforms.RandomPerspective(distortion_scale=0.25, p=0.25),
               transforms.RandomAdjustSharpness(sharpness_factor=4, p=0.25),
@@ -112,7 +113,8 @@ class LokiDataModule(pl.LightningDataModule):
               transforms.ToTensor(),
               transforms.Resize(size=224),
               transforms.CenterCrop(size=224),
-              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
+              transforms.RandomInvert(p=1),
+              #transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
         ])
 
         self.train.dataset.img_transform = self.augmentation
