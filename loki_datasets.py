@@ -102,8 +102,8 @@ class LokiDataModule(pl.LightningDataModule):
               transforms.RandomRotation(degrees=15),
               transforms.RandomHorizontalFlip(),
               transforms.CenterCrop(size=224),
-              transforms.RandomInvert(p=1),
-              #transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225]),
+              #transforms.RandomInvert(p=1),
+              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225]),
               transforms.RandomAutocontrast(p=0.25),
               transforms.RandomPerspective(distortion_scale=0.25, p=0.25),
               transforms.RandomAdjustSharpness(sharpness_factor=4, p=0.25),
@@ -111,10 +111,10 @@ class LokiDataModule(pl.LightningDataModule):
         # Preprocessing steps applied to validation and test set.
         self.transform = transforms.Compose([
               transforms.ToTensor(),
-              transforms.Resize(size=224),
+              transforms.Resize(size=300),
               transforms.CenterCrop(size=224),
-              transforms.RandomInvert(p=1),
-              #transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
+              #transforms.RandomInvert(p=1),
+              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225]),
         ])
 
         self.train.dataset.img_transform = self.augmentation
@@ -122,9 +122,6 @@ class LokiDataModule(pl.LightningDataModule):
         self.test.dataset.img_transform = self.transform
     def prepare_data(self):
         pass
-
-
-
 
     def train_dataloader(self):
         return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=10)
@@ -134,4 +131,8 @@ class LokiDataModule(pl.LightningDataModule):
 
     def test_dataloader(self):
         return DataLoader(self.test, batch_size=self.batch_size, num_workers=10)
+
+    def predict_dataloader(self):
+        return DataLoader(self.test, batch_size=self.batch_size, num_workers=10)
+
 

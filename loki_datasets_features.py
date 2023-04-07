@@ -17,6 +17,73 @@ from pytorch_lightning import seed_everything
 torch.manual_seed(42)
 seed = seed_everything(42, workers=True)
 
+#%%
+list_features =["object_area",
+                "object_area_px",
+                "object_convexity",
+                "object_form",
+                "object_fourier_descriptor_01",
+                "object_fourier_descriptor_02",
+                "object_fourier_descriptor_03",
+                "object_fourier_descriptor_04",
+                "object_fourier_descriptor_05",
+                "object_fourier_descriptor_06",
+                "object_fourier_descriptor_07",
+                "object_fourier_descriptor_08",
+                "object_fourier_descriptor_09",
+                "object_fourier_descriptor_10",
+                "object_hu_moment_3",
+                "object_graymean",
+                "object_hu_moment_4",
+                "object_kurtosis",
+                "object_mc_area_exc",
+                "object_mc_circex",
+                "object_hu_moment_5",
+                "object_mc_bounding_box_area",
+                "object_mc_eccentricity",
+                "object_mc_height",
+                "object_mc_area",
+                "object_mc_circ.",
+                "object_mc_%area",
+                "object_mc_convex_area",
+                "object_mc_equivalent_diameter",
+                "object_mc_euler_number",
+                "object_mc_extent",
+                "object_mc_local_centroid_col",
+                "object_mc_local_centroid_row",
+                "object_mc_major",
+                "object_mc_min",
+                "object_mc_range",
+                "object_milliseconds",
+                "object_pressure",
+                "object_timestamp",
+                "object_mc_minor",
+                "object_mc_solidity",
+                "object_oxygen_concentration",
+                "object_salinity",
+                "object_width",
+                "object_mc_max",
+                "object_mc_perim.",
+                "object_mc_perimareaexc",
+                "object_mc_width",
+                "object_oxygen_saturation",
+                "object_skewness",
+                "object_structure",
+                "object_hu_moment_1",
+                "object_hu_moment_6",
+                "object_hu_moment_2",
+                "object_hu_moment_7",
+                "object_mc_angle",
+                "object_mc_elongation",
+                "object_mc_intden",
+                "object_mc_mean",
+                "object_mc_perimmajor",
+                "object_temperature_oxsens",
+                "root_path",
+                'img_file_name',
+                'label',
+]
+
 class LokiTrainValDataset(Dataset):
     def __init__(self, img_transform=None, target_transform=None):
         #self.df_abt = pd.read_csv("output/allcruises_df_validated_5with_zoomie.csv")
@@ -25,6 +92,9 @@ class LokiTrainValDataset(Dataset):
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]# remove artefact
         self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id','new_index'],axis=1)
         # num features
+        # ecotaxa
+        self.df_abt = self.df_abt[list_features]
+        self.df_abt= pd.concat([self.df_abt[self.df_abt['label'] == l].head(5000) for l in np.unique(self.df_abt['label'])])
         self.numeric_columns = self.df_abt.select_dtypes(include='number').columns
         self.numeric_columns = self.df_abt[self.numeric_columns].dropna(axis =1, how='all').columns
         self.imputer_num = SimpleImputer(missing_values=np.nan, strategy='mean')

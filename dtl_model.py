@@ -58,10 +58,47 @@ class DtlModel(pl.LightningModule):
             for key, value in resnet_weights.items():
                 if key.startswith('teacher_backbone'):
                     student_backbone_state_dict[key[stlen:]] = value
-            print(len(student_backbone_state_dict))
-            print(student_backbone_state_dict)
+            #print(len(student_backbone_state_dict))
+            #print(student_backbone_state_dict)
             # create a new ResNet model with the same architecture as the teacher backbone
             resnet = models.resnet18(pretrained=False)
+            model = nn.Sequential(*list(resnet.children())[:-1])
+            # load the extracted teacher backbone weights into the new model
+            model.load_state_dict(student_backbone_state_dict)
+            self.feature_extractor=model
+            #torch.save(resnet_weights, 'resnet_backbone_weights.pth')
+            #model.load_state_dict(checkpoint["state_dict"])
+        elif arch == "resnet_dino450":
+            c_path = "saved_models/epoch=449-step=23850.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            #print(checkpoint["state_dict"].keys())
+            resnet_weights = checkpoint["state_dict"]
+            student_backbone_state_dict = OrderedDict()
+            stlen = len("teacher_backbone.")
+            for key, value in resnet_weights.items():
+                if key.startswith('teacher_backbone'):
+                    student_backbone_state_dict[key[stlen:]] = value
+            #print(len(student_backbone_state_dict))
+            #print(student_backbone_state_dict)
+            # create a new ResNet model with the same architecture as the teacher backbone
+            resnet = models.resnet18(pretrained=False)
+            model = nn.Sequential(*list(resnet.children())[:-1])
+            # load the extracted teacher backbone weights into the new model
+            model.load_state_dict(student_backbone_state_dict)
+            self.feature_extractor=model
+            #torch.save(resnet_weights, 'resnet_backbone_weights.pth')
+            #model.load_state_dict(checkpoint["state_dict"])
+        elif arch == "resnet50_dino":
+            c_path = "saved_models/epoch=299-step=31800.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            student_backbone_state_dict = OrderedDict()
+            stlen = len("teacher_backbone.")
+            for key, value in resnet_weights.items():
+                if key.startswith('teacher_backbone'):
+                    student_backbone_state_dict[key[stlen:]] = value
+            # create a new ResNet model with the same architecture as the teacher backbone
+            resnet = models.resnet50(pretrained=False)
             model = nn.Sequential(*list(resnet.children())[:-1])
             # load the extracted teacher backbone weights into the new model
             model.load_state_dict(student_backbone_state_dict)
@@ -307,6 +344,6 @@ class DtlModel(pl.LightningModule):
         Configure the call back e.g. Early stopping or Model Checkpointing
         Returns:
         """
-        early_stop = EarlyStopping(monitor ="val/loss", patience=3,  mode = "min")
-        checkpoint = ModelCheckpoint(monitor ="val/loss", mode = "min")
+        early_stop = EarlyStopping(monitor ="val/acc", patience=3,  mode = "max")
+        checkpoint = ModelCheckpoint(monitor ="val/acc", mode = "max")
         return [early_stop, checkpoint]

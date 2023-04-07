@@ -20,7 +20,7 @@ if __name__ == '__main__':
     label_encoder = lrvd.label_encoder
     logger = WandbLogger(project="loki")
     print(wandb.run.name)
-    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="effnet", transfer=True, num_train_layers=3, wandb_name=wandb.run.name, learning_rate=5.7543993733715664e-05)
+    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet_dino", transfer=True, num_train_layers=1, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
     bs_fit = False
     lr_fit = False
     if bs_fit:
@@ -30,7 +30,7 @@ if __name__ == '__main__':
         trainer=pl.Trainer(logger=logger,max_epochs=1, accelerator="mps", devices="auto", deterministic=True, auto_lr_find=True)
         trainer.tune(model,dm)
     else:
-        trainer = pl.Trainer(logger=logger, max_epochs=10, accelerator="mps", devices="auto")
+        trainer = pl.Trainer(logger=logger, max_epochs=5, accelerator="mps", devices="auto", deterministic=True)
         trainer.fit(model, dm)
         trainer.validate(model, dm)
         trainer.test(model, dm)
