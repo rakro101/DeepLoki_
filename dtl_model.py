@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix, classification_report, ConfusionMa
 import matplotlib.pyplot as plt
 from typing import Dict, Any, Sequence, Union, List, Optional
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-
+import numpy as np
 torch.manual_seed(42)
 seed = seed_everything(42, workers=True)
 
@@ -39,15 +39,10 @@ class DtlModel(pl.LightningModule):
         self.num_train_layers = num_train_layers
         self.arch = arch
         if arch == "resnet18":
-            self.feature_extractor = models.resnet18(pretrained=transfer)
-        elif arch == "resnet50":
-            self.feature_extractor = models.resnet50(pretrained=transfer)
-        elif arch == "vgg16":
-            self.feature_extractor = models.vgg16(pretrained=transfer)
-        elif arch == "vitb":
-            self.feature_extractor = models.vit_b_16(pretrained=transfer)
-        elif arch == "effnet":
-            self.feature_extractor = models.efficientnet_v2_s(pretrained=transfer)
+            # ToDo fix because we use an classification layer add the foward step
+            resnet = models.resnet18(pretrained=transfer)
+            model = nn.Sequential(*list(resnet.children())[:-1])
+            self.feature_extractor = model
         elif arch == "resnet_dino":
             c_path = "saved_models/epoch=299-step=34200.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
@@ -105,6 +100,45 @@ class DtlModel(pl.LightningModule):
             self.feature_extractor=model
             #torch.save(resnet_weights, 'resnet_backbone_weights.pth')
             #model.load_state_dict(checkpoint["state_dict"])
+        elif arch == "dtl_resnet18_classifier":
+            c_path = "loki/ghz801ed/checkpoints/epoch=2-step=456.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            print(resnet_weights.keys())
+            print(model.state_dict().keys())
+            #model.fc = nn.Linear(512, self.num_classes)
+            model = nn.Sequential(
+                model,
+                nn.Linear(1000, self.num_classes)
+            )
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            print(len(real_keys))
+            print(len(new_values))
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            model.load_state_dict(my_ordered_dict)
+            self.feature_extractor=model
+        # forward ohne classifier
+        elif arch == "dino_resnet18_classifier":
+            c_path = "loki/kbnoao6c/checkpoints/epoch=4-step=760.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            print(len(real_keys))
+            print(len(new_values))
+            #for key, value in resnet_weights.items():
+            #    if key.startswith('feature_extractor'):
+            #        pre_train_dict[key[stlen:]] = value
+            #print(resnet_weights.keys())
+            #print(model.state_dict().keys())
+            model.fc = nn.Linear(512, self.num_classes)
+            model.load_state_dict(my_ordered_dict)
+            self.feature_extractor=model
+
         self.save_hyperparameters()
         if transfer:
             max_Children = int(len([child for child in self.feature_extractor.children()]))
@@ -298,7 +332,7 @@ class DtlModel(pl.LightningModule):
         """
         self._epoch_end(outputs, "val")
 
-    def predict_step(self, batch:torch.Tensor, batch_idx:int, dataloader_idx:int=0)->torch.Tensor:
+    def predict_step(self, batch:torch.Tensor, batch_idx:int, dataloader_idx:int=0)->Dict[str, torch.Tensor]:
         """
         Calculate model prediction
 
@@ -307,9 +341,13 @@ class DtlModel(pl.LightningModule):
         Returns:
             None
         """
-        batch_x, gt = batch[0], batch[1]
-        out = self.forward(batch_x)
-        return out
+        batch_x, gt, file_name = batch[0], batch[1], batch[2]
+        out = self._forward_features(batch_x)
+        softmax = nn.Softmax(dim=1)
+        preds = softmax(out).argmax(dim=1).detach().cpu().numpy()
+        preds = self.label_encoder.inverse_transform(preds)
+        confis = np.max(softmax(out).detach().cpu().numpy(), axis=1)
+        return {"file_names": file_name, "preds": preds, "confis":confis}
 
     def lr_scheduler_step(
         self,

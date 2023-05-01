@@ -75,9 +75,49 @@ class LokiTestDataset(Dataset):
             label = self.target_transform(label)
         return image, label
 
+class LokiPredictDataset(Dataset):
+    def __init__(self, img_transform=None, target_transform=None, label_encoder=None, data_path= "data/loki_raw_output/0010_PS121-010-03/", ending='.bmp'):
+        #self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023.csv")
+        self.ending = ending
+        self.df_abt = self.create_df_from_path(data_path)
+        self.label_encoder = label_encoder
+        self.label = torch.Tensor(self.df_abt['label']).type(torch.LongTensor)
+        self.image_root = self.df_abt['root_path'].values
+        self.image_path = self.df_abt['img_file_name'].values
+        self.img_transform = img_transform
+        self.target_transform = target_transform
+
+
+    def create_df_from_path(self, path):
+        path_list = []
+        name_list = []
+        for path, subdirs, files in os.walk(path):
+            # print('*' * 12)
+            for name in files:
+                if name.endswith(self.ending):
+                    path_list.append(path)
+                    name_list.append(name)
+                    print(os.path.join(path, name))
+        df = pd.DataFrame()
+        df['root_path'] = path_list
+        df['img_file_name'] = name_list
+        df['label'] = 0
+        return df
+    def __len__(self):
+        return len(self.df_abt)
+
+    def __getitem__(self, item):
+        img_path = os.path.join(self.image_root[item], self.image_path[item])
+        image = Image.open(img_path).convert('RGB')
+        label = self.label[item]
+        if self.img_transform:
+            image = self.img_transform(image)
+        if self.target_transform:
+            label = self.target_transform(label)
+        return image, label, img_path
 
 class LokiDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, data_dir: str = './'):
+    def __init__(self, batch_size, data_dir: str = './', pred_data_path = "data/loki_raw_output/0010_PS121-010-03/", ending=".bmp"):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -85,6 +125,7 @@ class LokiDataModule(pl.LightningDataModule):
         train_val_dataset = LokiTrainValDataset()
         encoder_train = train_val_dataset.label_encoder
         test_dataset = LokiTestDataset(label_encoder=encoder_train)
+        predict_dataset = LokiPredictDataset(label_encoder=encoder_train, data_path=pred_data_path, ending=ending)
         # split dataset
         number_of_samples =len(train_val_dataset)
         n_train_samples =int(0.8*number_of_samples)
@@ -92,6 +133,7 @@ class LokiDataModule(pl.LightningDataModule):
         n_rest =number_of_samples -n_train_samples -n_val_samples
         self.train, self.val = random_split(train_val_dataset,[n_train_samples, n_val_samples, n_rest])[0:2]
         self.test = random_split(test_dataset, [len(test_dataset), 0])[0]
+        self.predict = random_split(predict_dataset, [len(predict_dataset), 0])[0]
 
 
 
@@ -120,6 +162,7 @@ class LokiDataModule(pl.LightningDataModule):
         self.train.dataset.img_transform = self.augmentation
         self.val.dataset.img_transform = self.transform
         self.test.dataset.img_transform = self.transform
+        self.predict.dataset.img_transform = self.transform
     def prepare_data(self):
         pass
 
@@ -133,6 +176,6 @@ class LokiDataModule(pl.LightningDataModule):
         return DataLoader(self.test, batch_size=self.batch_size, num_workers=10)
 
     def predict_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=10)
+        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=10)
 
 

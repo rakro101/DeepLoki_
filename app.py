@@ -1,5 +1,6 @@
 import streamlit as st
 import color_public_hpc
+import sort_img_and_save
 
 __author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
              " Heinrich-Heine-University"
@@ -32,14 +33,20 @@ def main():
 
     save_folder_path =container2.selectbox(
     'Select you folder path.',
-    ['./sorted_img/',])
+    #['./sorted_img/',]
+        ['./inference/sorted', ]
+    )
 
     container2.write(f'Selected save_folder_path: {save_folder_path}')
 
+    option = container2.selectbox(
+        'Select a classifier?',
+        ("dtl_resnet18_classifier", "dino_resnet18_classifier"))
 
     if container2.button("Start Sorting"):
         with st.spinner('(Pre-)Sorting images...'):
-            color_public_hpc.main(folder_path=folder_path, save_class_patches_path=save_folder_path)
+            #color_public_hpc.main(folder_path=folder_path, save_class_patches_path=save_folder_path)
+            sort_img_and_save.main(haul_pic_path=folder_path, ending=".bmp", arch=option, target=save_folder_path)
         st.write('\n')
         st.write('Sorting is finished.')
 
