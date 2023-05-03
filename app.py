@@ -34,7 +34,6 @@ def main():
 
     save_folder_path =container2.selectbox(
     'Select you folder path.',
-    #['./sorted_img/',]
         ['./inference/sorted', ]
     )
 
@@ -52,8 +51,6 @@ def main():
         st.write('\n')
         st.write(f"Elapsed time: {elapsed_time:.4f} seconds")
         st.write('Sorting is finished.')
-
-
 
 if __name__ == '__main__':
     main()
