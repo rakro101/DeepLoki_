@@ -1,7 +1,7 @@
 import streamlit as st
 import color_public_hpc
 import sort_img_and_save
-
+import time
 __author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
              " Heinrich-Heine-University"
 __license__ = "MIT"
@@ -21,8 +21,9 @@ def main():
     container1 = st.container()
 
     container1.subheader("Data for analysis:")
+    # drag&drop
     folder_path = st_directory_picker()
-
+    # choose folder  from explorer
     container1.write(f'Selected folder_path: {folder_path}')
     st.write('\n')
 
@@ -45,9 +46,11 @@ def main():
 
     if container2.button("Start Sorting"):
         with st.spinner('(Pre-)Sorting images...'):
-            #color_public_hpc.main(folder_path=folder_path, save_class_patches_path=save_folder_path)
+            start_time= time.time()
             sort_img_and_save.main(haul_pic_path=folder_path, ending=".bmp", arch=option, target=save_folder_path)
+            elapsed_time = time.time() - start_time
         st.write('\n')
+        st.write(f"Elapsed time: {elapsed_time:.4f} seconds")
         st.write('Sorting is finished.')
 
 
