@@ -14,14 +14,15 @@ seed = seed_everything(42, workers=True)
 
 
 if __name__ == '__main__':
-    time.sleep(4*1800)
+    #time.sleep(7200)
     dm = LokiDataModule(batch_size=1024)#1024
     lrvd = LokiTrainValDataset()
     num_classes = lrvd.n_classes
     label_encoder = lrvd.label_encoder
     logger = WandbLogger(project="loki")
     print(wandb.run.name)
-    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet18", transfer=True, num_train_layers=4, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
+    # numlayers has shifted from 4.5.2023 (because now lin layer is in model) al 1 is now 2.
+    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="dino_resnet18_classifier_10", transfer=True, num_train_layers=3, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
     bs_fit = False
     lr_fit = False
     if bs_fit:
@@ -32,6 +33,6 @@ if __name__ == '__main__':
         trainer.tune(model,dm)
     else:
         trainer = pl.Trainer(logger=logger, max_epochs=10, accelerator="mps", devices="auto", deterministic=True)
-        trainer.fit(model, dm)
-        trainer.validate(model, dm)
+        #trainer.fit(model, dm)
+        #trainer.validate(model, dm)
         trainer.test(model, dm)

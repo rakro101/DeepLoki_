@@ -39,50 +39,44 @@ class DtlModel(pl.LightningModule):
         self.num_train_layers = num_train_layers
         self.arch = arch
         if arch == "resnet18":
-            # ToDo fix because we use an classification layer add the foward step
+            # ToDo fix because we use an classification layer add the forward step
             resnet = models.resnet18(pretrained=transfer)
-            model = nn.Sequential(*list(resnet.children())[:-1])
-            self.feature_extractor = model
+            resnet.fc = nn.Linear(512, self.num_classes)
+            print(resnet)
+            #model = nn.Sequential(*list(resnet.children())[:-1])
+            self.feature_extractor = resnet
         elif arch == "resnet_dino":
             c_path = "saved_models/epoch=299-step=34200.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
-            #print(checkpoint["state_dict"].keys())
             resnet_weights = checkpoint["state_dict"]
             student_backbone_state_dict = OrderedDict()
             stlen = len("teacher_backbone.")
             for key, value in resnet_weights.items():
                 if key.startswith('teacher_backbone'):
                     student_backbone_state_dict[key[stlen:]] = value
-            #print(len(student_backbone_state_dict))
-            #print(student_backbone_state_dict)
-            # create a new ResNet model with the same architecture as the teacher backbone
             resnet = models.resnet18(pretrained=False)
             model = nn.Sequential(*list(resnet.children())[:-1])
             # load the extracted teacher backbone weights into the new model
             model.load_state_dict(student_backbone_state_dict)
+            model = nn.Sequential(model, nn.Flatten(), nn.Linear(resnet.fc.in_features, self.num_classes))
             self.feature_extractor=model
             #torch.save(resnet_weights, 'resnet_backbone_weights.pth')
             #model.load_state_dict(checkpoint["state_dict"])
         elif arch == "resnet_dino450":
             c_path = "saved_models/epoch=449-step=23850.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
-            #print(checkpoint["state_dict"].keys())
             resnet_weights = checkpoint["state_dict"]
             student_backbone_state_dict = OrderedDict()
             stlen = len("teacher_backbone.")
             for key, value in resnet_weights.items():
                 if key.startswith('teacher_backbone'):
                     student_backbone_state_dict[key[stlen:]] = value
-            #print(len(student_backbone_state_dict))
-            #print(student_backbone_state_dict)
-            # create a new ResNet model with the same architecture as the teacher backbone
             resnet = models.resnet18(pretrained=False)
             model = nn.Sequential(*list(resnet.children())[:-1])
             # load the extracted teacher backbone weights into the new model
             model.load_state_dict(student_backbone_state_dict)
+            model = nn.Sequential(model, nn.Flatten(), nn.Linear(resnet.fc.in_features, self.num_classes))
             self.feature_extractor=model
-            #torch.save(resnet_weights, 'resnet_backbone_weights.pth')
-            #model.load_state_dict(checkpoint["state_dict"])
         elif arch == "resnet50_dino":
             c_path = "saved_models/epoch=299-step=31800.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
@@ -92,16 +86,15 @@ class DtlModel(pl.LightningModule):
             for key, value in resnet_weights.items():
                 if key.startswith('teacher_backbone'):
                     student_backbone_state_dict[key[stlen:]] = value
-            # create a new ResNet model with the same architecture as the teacher backbone
             resnet = models.resnet50(pretrained=False)
             model = nn.Sequential(*list(resnet.children())[:-1])
             # load the extracted teacher backbone weights into the new model
             model.load_state_dict(student_backbone_state_dict)
-            self.feature_extractor=model
-            #torch.save(resnet_weights, 'resnet_backbone_weights.pth')
-            #model.load_state_dict(checkpoint["state_dict"])
-        elif arch == "dtl_resnet18_classifier":
+            model = nn.Sequential(model, nn.Flatten(), nn.Linear(resnet.fc.in_features, self.num_classes))
+            self.feature_extractor = model
+        elif arch == "dtl_resnet18_classifier2":#old
             c_path = "loki/ghz801ed/checkpoints/epoch=2-step=456.ckpt"
+            #c_path = "loki/yhljj2fz/checkpoints/epoch=3-step=608.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
             resnet_weights = checkpoint["state_dict"]
             model = models.resnet18(pretrained=False)
@@ -118,6 +111,22 @@ class DtlModel(pl.LightningModule):
             print(len(new_values))
             my_ordered_dict = OrderedDict(zip(real_keys, new_values))
             model.load_state_dict(my_ordered_dict)
+            print(model)
+            self.feature_extractor=model
+        elif arch == "dtl_resnet18_classifier":
+            #c_path = "loki/ghz801ed/checkpoints/epoch=2-step=456.ckpt"
+            c_path = "loki/yhljj2fz/checkpoints/epoch=3-step=608.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            print(len(real_keys))
+            print(len(new_values))
+            model.fc = nn.Linear(512, self.num_classes)
+            model.load_state_dict(my_ordered_dict)
+            print(model)
             self.feature_extractor=model
         # forward ohne classifier
         elif arch == "dino_resnet18_classifier":
@@ -130,15 +139,39 @@ class DtlModel(pl.LightningModule):
             my_ordered_dict = OrderedDict(zip(real_keys, new_values))
             print(len(real_keys))
             print(len(new_values))
-            #for key, value in resnet_weights.items():
-            #    if key.startswith('feature_extractor'):
-            #        pre_train_dict[key[stlen:]] = value
-            #print(resnet_weights.keys())
-            #print(model.state_dict().keys())
             model.fc = nn.Linear(512, self.num_classes)
             model.load_state_dict(my_ordered_dict)
+            print(model)
             self.feature_extractor=model
-
+        elif arch == "dino_resnet18_classifier_10":
+            #num3, bzw 2 und classifier
+            c_path = "loki/227395ze/checkpoints/epoch=6-step=1064.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            print(len(real_keys))
+            print(len(new_values))
+            model.fc = nn.Linear(512, self.num_classes)
+            model.load_state_dict(my_ordered_dict)
+            print(model)
+            self.feature_extractor=model
+        elif arch == "dtl_resnet18_classifier_10":
+            c_path = "loki/m8zhox5b/checkpoints/epoch=3-step=608.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            print(len(real_keys))
+            print(len(new_values))
+            model.fc = nn.Linear(512, self.num_classes)
+            model.load_state_dict(my_ordered_dict)
+            print(model)
+            self.feature_extractor=model
         self.save_hyperparameters()
         if transfer:
             max_Children = int(len([child for child in self.feature_extractor.children()]))
@@ -149,8 +182,6 @@ class DtlModel(pl.LightningModule):
                     for param in child.parameters():
                         param.requires_grad = True
 
-        n_sizes = self._get_conv_output(input_shape)
-        self.classifier = nn.Linear(n_sizes, num_classes)
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
 
@@ -194,8 +225,8 @@ class DtlModel(pl.LightningModule):
 
        """
        x = self._forward_features(x)
-       x = x.view(x.size(0), -1)
-       x = self.classifier(x)
+       #x = x.view(x.size(0), -1)
+       #x = self.classifier(x)
        return x
 
     def training_step(self, batch:torch.Tensor):
@@ -244,7 +275,7 @@ class DtlModel(pl.LightningModule):
             dict with loss, outputs and gt
         """
         batch_x, gt = batch[0], batch[1]
-        out = self.forward(batch_x)
+        out = self.forward(batch_x)#ToDo fix
         loss = self.criterion(out, gt)
         self.log(f"{mode}/loss", loss, prog_bar=True)
         self.log(f"{mode}/acc", self.accuracy(out, gt), prog_bar=True)
@@ -292,7 +323,7 @@ class DtlModel(pl.LightningModule):
         model_dir = "paper/runs/"
         df_cm = pd.DataFrame(report_confusion_matrix)
         df_cr = pd.DataFrame(report).transpose()
-        disp = ConfusionMatrixDisplay(confusion_matrix=report_confusion_matrix, display_labels=self.label_encoder.classes_).plot()
+        disp = ConfusionMatrixDisplay(confusion_matrix=report_confusion_matrix, display_labels=self.label_encoder.classes_).plot(cmap=plt.cm.Blues)
         fig_rf = disp.figure_
         fig_rf.set_figwidth(20)
         fig_rf.set_figheight(20)
@@ -342,7 +373,7 @@ class DtlModel(pl.LightningModule):
             None
         """
         batch_x, gt, file_name = batch[0], batch[1], batch[2]
-        out = self._forward_features(batch_x)
+        out = self.forward(batch_x)#
         softmax = nn.Softmax(dim=1)
         preds = softmax(out).argmax(dim=1).detach().cpu().numpy()
         preds = self.label_encoder.inverse_transform(preds)

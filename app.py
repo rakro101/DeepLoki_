@@ -1,7 +1,7 @@
 import streamlit as st
-import color_public_hpc
 import sort_img_and_save
 import time
+
 __author__ = "Raphael Kronberg Department of MMBS, MatNat Faculty," \
              " Heinrich-Heine-University"
 __license__ = "MIT"
@@ -41,7 +41,7 @@ def main():
 
     option = container2.selectbox(
         'Select a classifier?',
-        ("dtl_resnet18_classifier", "dino_resnet18_classifier"))
+        ("dtl_resnet18_classifier_10", "dino_resnet18_classifier_10"))
 
     if container2.button("Start Sorting"):
         with st.spinner('(Pre-)Sorting images...'):

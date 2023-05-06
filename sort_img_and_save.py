@@ -8,13 +8,33 @@ import pytorch_lightning as pl
 from pathlib import Path
 import shutil
 
-def folder_name(confi, pred, treshold):
+def folder_name(confi:float, pred:str, treshold:float)->str:
+    """
+    Return the folder_name, unknow if confidence is below treshold
+    Args:
+        confi: confidence score
+        pred: prediction
+        treshold: treshold
+
+    Returns:
+
+    """
     if confi > treshold:
         return pred
     else:
         return "Unknow"
 
-def predict_folder(haul_pic_path=haul_pic_path, ending=".bmp", arch="dtl_resnet18_classifier"):
+def predict_folder(haul_pic_path:str=haul_pic_path, ending:str=".bmp", arch:str="dtl_resnet18_classifier")->pd.DataFrame:
+    """
+    predict all classes for the images in the folder
+    Args:
+        haul_pic_path: path to the images
+        ending: file extension
+        arch: classifier
+
+    Returns:
+        dataframe with predictions
+    """
     dm = LokiDataModule(batch_size=256, ending=ending, pred_data_path=haul_pic_path)
     pred_loader = dm.predict_dataloader()
     lrvd = LokiTrainValDataset()
@@ -34,19 +54,45 @@ def predict_folder(haul_pic_path=haul_pic_path, ending=".bmp", arch="dtl_resnet1
     results.to_csv("inference/csv/inference_results.csv", sep=";")
     return results
 
-def create_folder(path):
+def create_folder(path:str):
+    """
+    create folder
+    Args:
+        path: path
+
+    Returns:
+
+    """
     # creating a new directory called pythondirectory
     Path(path).mkdir(parents=True, exist_ok=True)
     return None
 
-def create_folders(results, target="inference/sorted"):
+def create_folders(results:pd.DataFrame, target="inference/sorted"):
+    """
+    Create folder for sorting
+    Args:
+        results: dataframe
+        target: file to folders
+
+    Returns:
+
+    """
     class_folders = np.unique(results["folder"])
     for cl in class_folders:
         temp_path = f"{target}/{cl}"
         create_folder(path=temp_path)
     return None
 
-def copy_to_folder(results, target="inference/sorted"):
+def copy_to_folder(results:pd.DataFrame, target="inference/sorted"):
+    """
+    copy the image to folder accordently to folder col
+    Args:
+        results: dataframe
+        target: path
+
+    Returns:
+
+    """
     for row in results.iterrows():
         source =f'{row[1][0]}'
         dest = f'{target}/{row[1][3]}'
@@ -55,7 +101,18 @@ def copy_to_folder(results, target="inference/sorted"):
         shutil.copyfile(source, os.path.join(dest, filename))
     return None
 
-def main(haul_pic_path=haul_pic_path, ending=".bmp", arch="dino_resnet18_classifier", target="inference/sorted"):
+def main(haul_pic_path:str=haul_pic_path, ending:str=".bmp", arch:str="dino_resnet18_classifier", target:str="inference/sorted"):
+    """
+    main methods
+    Args:
+        haul_pic_path: path to the image
+        ending: file extension of the images
+        arch: classifier
+        target: path to the sorted image folder
+
+    Returns:
+
+    """
     # get preds
     results = predict_folder(haul_pic_path=haul_pic_path,ending=ending, arch=arch)
     # create folders
@@ -63,6 +120,7 @@ def main(haul_pic_path=haul_pic_path, ending=".bmp", arch="dino_resnet18_classif
     # copy to folders
     copy_to_folder(results, target)
     print('done')
+    return None
 
 if __name__ == "__main__":
     #main(haul_pic_path="data/loki_raw_output/0010_PS121-010-03/")

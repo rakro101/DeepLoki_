@@ -193,7 +193,7 @@ class LokiDataModule(pl.LightningDataModule):
         # Preprocessing steps applied to validation and test set.
         self.transform = transforms.Compose([
               transforms.ToTensor(),
-              transforms.Resize(size=224),
+              transforms.Resize(size=300),
               transforms.CenterCrop(size=224),
               transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
         ])
