@@ -5,7 +5,7 @@ from loki_datasets import LokiDataModule, LokiTrainValDataset
 from dtl_model import DtlModel
 import time
 from pytorch_lightning.loggers import WandbLogger
-
+import glob
 import wandb
 wandb.login()
 
@@ -14,14 +14,14 @@ seed = seed_everything(42, workers=True)
 
 
 if __name__ == '__main__':
-    time.sleep(4*1800)
     dm = LokiDataModule(batch_size=1024)#1024
     lrvd = LokiTrainValDataset()
     num_classes = lrvd.n_classes
     label_encoder = lrvd.label_encoder
     logger = WandbLogger(project="loki")
     print(wandb.run.name)
-    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet18", transfer=True, num_train_layers=4, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
+    print(wandb.run.id)
+    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet_dino450", transfer=True, num_train_layers=3, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
     bs_fit = False
     lr_fit = False
     if bs_fit:
@@ -33,5 +33,9 @@ if __name__ == '__main__':
     else:
         trainer = pl.Trainer(logger=logger, max_epochs=10, accelerator="mps", devices="auto", deterministic=True)
         trainer.fit(model, dm)
-        trainer.validate(model, dm)
-        trainer.test(model, dm)
+        folder_path = f'loki/{wandb.run.id}/checkpoints/'
+        file_pattern = folder_path + '*.ckpt'
+        file_list = glob.glob(file_pattern)
+        print(file_list[0])
+        trainer.validate(model, dm, ckpt_path=file_list[0])
+        trainer.test(model, dm, ckpt_path=file_list[0])
