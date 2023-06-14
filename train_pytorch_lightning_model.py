@@ -21,7 +21,7 @@ if __name__ == '__main__':
     logger = WandbLogger(project="loki")
     print(wandb.run.name)
     print(wandb.run.id)
-    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet_dino450", transfer=True, num_train_layers=3, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
+    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet18", transfer=True, num_train_layers=1, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
     bs_fit = False
     lr_fit = False
     if bs_fit:
