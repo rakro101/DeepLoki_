@@ -22,7 +22,7 @@ def main():
     if 'count' not in st.session_state:
         st.session_state.count = 0
     if 'df_load' not in st.session_state:
-        df_abt = pd.read_csv("output/allcruises_df_validated_5with_zoomie.csv")
+        df_abt = pd.read_csv("output/update_allcruises_df_validated_5with_zoomie_20230727.csv",sep=";")
         st.session_state.df_load = df_abt
         st.session_state.cls_dd = np.unique(df_abt['label'])
         st.session_state.cruise_dd = np.unique(df_abt['object_cruise'])

@@ -14,14 +14,14 @@ seed = seed_everything(42, workers=True)
 
 
 if __name__ == '__main__':
-    dm = LokiDataModule(batch_size=1024)#1024
+    dm = LokiDataModule(batch_size=1536)#1024
     lrvd = LokiTrainValDataset()
     num_classes = lrvd.n_classes
     label_encoder = lrvd.label_encoder
     logger = WandbLogger(project="loki")
     print(wandb.run.name)
     print(wandb.run.id)
-    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet18", transfer=True, num_train_layers=1, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
+    model = DtlModel(input_shape=(3,300,300), label_encoder=label_encoder, num_classes=num_classes, arch="resnet_dino450", transfer=True, num_train_layers=1, wandb_name=wandb.run.name, learning_rate=0.0001)#5.7543993733715664e-05)
     bs_fit = False
     lr_fit = False
     if bs_fit:
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         trainer=pl.Trainer(logger=logger,max_epochs=1, accelerator="mps", devices="auto", deterministic=True, auto_lr_find=True)
         trainer.tune(model,dm)
     else:
-        trainer = pl.Trainer(logger=logger, max_epochs=10, accelerator="mps", devices="auto", deterministic=True)
+        trainer = pl.Trainer(precision=16, logger=logger, max_epochs=20, accelerator="mps", devices="auto", deterministic=True)
         trainer.fit(model, dm)
         folder_path = f'loki/{wandb.run.id}/checkpoints/'
         file_pattern = folder_path + '*.ckpt'

@@ -20,7 +20,8 @@ seed = seed_everything(42, workers=True)
 class LokiTrainValDataset(Dataset):
     def __init__(self, img_transform=None, target_transform=None):
         #self.df_abt = pd.read_csv("output/allcruises_df_validated_5with_zoomie.csv")
-        self.df_abt = pd.read_csv('output/update_allcruises_df_validated_5with_zoomie_20230303.csv')
+        # self.df_abt = pd.read_csv('output/update_allcruises_df_validated_5with_zoomie_20230303.csv') #20230722
+        self.df_abt = pd.read_csv('output/update_allcruises_df_validated_5with_zoomie_20230727.csv',sep=";")
         self.df_abt = self.df_abt[self.df_abt["object_cruise"] != "PS99.2"]
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]# remove artefact
         self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id'],axis=1)
@@ -51,7 +52,8 @@ class LokiTrainValDataset(Dataset):
 class LokiTestDataset(Dataset):
     def __init__(self, img_transform=None, target_transform=None, label_encoder=None):
         #self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023.csv")
-        self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023_nicole.csv")
+        # self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_03032023_nicole.csv") #20230722
+        self.df_abt = pd.read_csv("output/update_wo_artefacts_test_dataset_PS992_20230727_nicole.csv",sep=";")
         self.df_abt = self.df_abt[self.df_abt["label"] != "Artefact"]  # remove artefact
         self.df_abt = self.df_abt.drop(['count','object_annotation_category', 'object_annotation_category_id'],axis=1)
         self.label_encoder = label_encoder

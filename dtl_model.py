@@ -413,6 +413,6 @@ class DtlModel(pl.LightningModule):
         Configure the call back e.g. Early stopping or Model Checkpointing
         Returns:
         """
-        early_stop = EarlyStopping(monitor ="val/acc", patience=3,  mode = "max")
-        checkpoint = ModelCheckpoint(monitor ="val/acc", mode = "max")
+        early_stop = EarlyStopping(monitor ="val/loss", patience=2,  mode = "min")
+        checkpoint = ModelCheckpoint(monitor ="val/loss", mode = "min")
         return [early_stop, checkpoint]

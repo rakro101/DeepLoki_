@@ -57,3 +57,12 @@ Based on the implementation of the previous paper:  https://doi.org/10.3390/v130
 # Disclaimer
 This progam/code can not be used as diagnostic tool.
 
+# Create new dataset
+```
+0. data/combine_classes_for_training_xxx.csv adjust mapping
+1. create_data_csv_xxx.py
+2. create_ecotaca_data_nicole_csv_xxx.py
+3. eval_eco_taxa_nicole_xxx.py
+4. modify loki_datasets.py - trainval and test
+```
+
