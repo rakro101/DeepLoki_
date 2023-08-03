@@ -41,7 +41,7 @@ def main():
 
     option = container2.selectbox(
         'Select a classifier?',
-        ("dtl_resnet18_classifier_10", "dino_resnet18_classifier_10"))
+        ("DTL", "DINO"))
 
     if container2.button("Start Sorting"):
         with st.spinner('(Pre-)Sorting images...'):

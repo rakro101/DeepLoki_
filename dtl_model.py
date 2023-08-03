@@ -77,6 +77,21 @@ class DtlModel(pl.LightningModule):
             model.load_state_dict(student_backbone_state_dict)
             model = nn.Sequential(model, nn.Flatten(), nn.Linear(resnet.fc.in_features, self.num_classes))
             self.feature_extractor=model
+        elif arch == "resnet_dino450_latent":
+            c_path = "saved_models/epoch=449-step=23850.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            student_backbone_state_dict = OrderedDict()
+            stlen = len("teacher_backbone.")
+            for key, value in resnet_weights.items():
+                if key.startswith('teacher_backbone'):
+                    student_backbone_state_dict[key[stlen:]] = value
+            resnet = models.resnet18(pretrained=False)
+            model = nn.Sequential(*list(resnet.children())[:-1])
+            # load the extracted teacher backbone weights into the new model
+            model.load_state_dict(student_backbone_state_dict)
+            model = nn.Sequential(model, nn.Flatten())
+            self.feature_extractor=model
         elif arch == "resnet50_dino":
             c_path = "saved_models/epoch=299-step=31800.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
@@ -160,6 +175,35 @@ class DtlModel(pl.LightningModule):
             self.feature_extractor=model
         elif arch == "dtl_resnet18_classifier_10":
             c_path = "loki/m8zhox5b/checkpoints/epoch=3-step=608.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            print(len(real_keys))
+            print(len(new_values))
+            model.fc = nn.Linear(512, self.num_classes)
+            model.load_state_dict(my_ordered_dict)
+            print(model)
+            self.feature_extractor=model
+        elif arch == "DINO":
+            #num3, bzw 2 und classifier
+            c_path = "loki/2q7bglvk/checkpoints/epoch=11-step=1224.ckpt"
+            checkpoint = torch.load(c_path, map_location=torch.device('mps'))
+            resnet_weights = checkpoint["state_dict"]
+            model = models.resnet18(pretrained=False)
+            real_keys = model.state_dict().keys()
+            new_values = resnet_weights.values()
+            my_ordered_dict = OrderedDict(zip(real_keys, new_values))
+            print(len(real_keys))
+            print(len(new_values))
+            model.fc = nn.Linear(512, self.num_classes)
+            model.load_state_dict(my_ordered_dict)
+            print(model)
+            self.feature_extractor=model
+        elif arch == "DTL":
+            c_path = "loki/wcvgi309/checkpoints/epoch=2-step=306.ckpt"
             checkpoint = torch.load(c_path, map_location=torch.device('mps'))
             resnet_weights = checkpoint["state_dict"]
             model = models.resnet18(pretrained=False)

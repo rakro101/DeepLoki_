@@ -41,6 +41,7 @@ df_sum =df_sum.sort_values('count', ascending=False)
 top_n = 6
 top_5_df =df_test[df_test['label'].isin(df_sum.index[:top_n])]
 top_5_df = top_5_df[top_5_df['label']!="Detritus"]
+
 from sklearn.manifold import TSNE
 V = top_5_df['latent_space'].values.reshape(-1,1)
 #V = np.reshape(V, (207,1))
