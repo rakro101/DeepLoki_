@@ -119,7 +119,19 @@ def create_folders(tvt, list_of_folders, run_id= "data_set_001"):
             print(temp_path)
             create_folder_from_path(temp_path)
     return None
-
+def is122(col):
+    if col in ["PS122.1", "PS122.2", "PS122-2"]:
+        return "PS122"
+    else:
+        return col
+def create_folders_per_cruise(cruises, list_of_folders, run_id= "5_cruises"):
+    for t in cruises:
+        t = is122(t)
+        for s in list_of_folders:
+            temp_path = f"data/{run_id}/{t}/{s}"
+            print(temp_path)
+            create_folder_from_path(temp_path)
+    return None
 def build_tvt(df_phase, run_id= "data_set_001"):
     counter = 0
     for img in df_phase.iterrows():
@@ -128,6 +140,17 @@ def build_tvt(df_phase, run_id= "data_set_001"):
             counter +=1
             src_file = img[1]['root_path']+"/"+img[1]['img_file_name']
             temp_path = f"data/{run_id}/{img[1]['phase']}/{img[1]['label']}"
+            print(src_file,temp_path)
+            shutil.copy(src_file, temp_path)
+    return None
+def build_5_cruises(df_phase, run_id= "5_cruises"):
+    counter = 0
+    for img in df_phase.iterrows():
+        if counter <= df_phase.shape[0]:
+            print(img[1]['root_path']+"/"+img[1]['img_file_name'], is122(img[1]['object_cruise']), img[1]['label'])
+            counter +=1
+            src_file = img[1]['root_path']+"/"+img[1]['img_file_name']
+            temp_path = f"data/{run_id}/{is122(img[1]['object_cruise'])}/{img[1]['label']}"
             print(src_file,temp_path)
             shutil.copy(src_file, temp_path)
     return None
@@ -146,6 +169,12 @@ if __name__ == '__main__':
     list_of_folders = list(np.unique(validated_df_zero['label']))
     print(len(list_of_folders))
     print(list_of_folders)
+    cruise_mod = False
+    if cruise_mod:
+        cruises = list(np.unique(df_phase["object_cruise"]))
+        print(cruises)
+        create_folders_per_cruise(cruises, list_of_folders, run_id= "5_cruises")
+        build_5_cruises(df_phase, run_id= "5_cruises")
     #tvt = ['train', 'val', 'test']
     #create_folders(tvt, list_of_folders, run_id="data_set_186")
     #build_tvt(df_phase, run_id="data_set_186")

@@ -1,6 +1,4 @@
 import streamlit as st
-import color_public_hpc
-import streamlit as st
 from PIL import Image, ImageOps
 import os
 import pandas as pd
