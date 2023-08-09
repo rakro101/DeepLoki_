@@ -41,6 +41,7 @@ def create_data_frame_form_folder(folder_path:str)->pd.DataFrame:
     df["path"] = folder_path
     df = df.sort_values(["date","time","ms"]).copy()
     df["date_time"] =df["date"].astype('str')+df["time"].astype('str')
+    print(df.shape)
     return df
 
 def remove_same_object_img(df:pd.DataFrame, treshold:int=50)->Tuple[pd.DataFrame,pd.DataFrame]:
@@ -123,26 +124,72 @@ def detect_duplicate_specimens(df: pd.DataFrame, gamma: int, eta: float) -> List
         A list of lists, where each sublist contains the image names of duplicate specimens.
     """
     duplicates = []
+    org_dub = dict()
     for _, group in df.groupby(["date", "time"]):
         if len(group) > 1:
             for i in range(len(group)):
                 specimen_duplicates = [group["filename"].iloc[i]]
                 for j in range(i + 1, len(group)):
                     if abs(group["ms"].astype('int').iloc[i] - group["ms"].astype('int').iloc[j]) <= gamma:
-                        coord_i = np.array([group["x-coord"].astype('int').iloc[i], group["y-coord"].astype('int').iloc[i]], dtype=float)
-                        coord_j = np.array([group["x-coord"].astype('int').iloc[j], group["y-coord"].astype('int').iloc[j]], dtype=float)
+                        coord_i = np.array(
+                            [group["x-coord"].astype('int').iloc[i], group["y-coord"].astype('int').iloc[i]],
+                            dtype=float)
+                        coord_j = np.array(
+                            [group["x-coord"].astype('int').iloc[j], group["y-coord"].astype('int').iloc[j]],
+                            dtype=float)
                         distance = np.linalg.norm(coord_i - coord_j)
                         if distance <= eta:
                             specimen_duplicates.append(group["filename"].iloc[j])
+                            if org_dub.get('name') is not None:
+                                org_dub[group["filename"].iloc[i]].append(group["filename"].iloc[j])
+                            else:
+                                org_dub[group["filename"].iloc[i]] = [group["filename"].iloc[j]]
+                            # print(len(specimen_duplicates))
                 if len(specimen_duplicates) > 1:
                     duplicates.append(specimen_duplicates)
-    return duplicates
+                    # get the not double
+                    #originals.append(specimen_duplicates[0])
+    return duplicates, org_dub
 
 
 
 if __name__ == '__main__':
-    df = create_data_frame_form_folder("data/zoomie/export_6238_20230517_1747")
-    print(len(detect_duplicate_specimens(df, 60, 280)))
+    #df = create_data_frame_form_folder("data/zoomie/export_6238_20230517_1747")
+    df = create_data_frame_form_folder("data/5_cruises/PS99.2")
+    print(df.head(10))
+    a , org_dub = detect_duplicate_specimens(df, 49, 400)
+    print(len(a))
+
+    #a=detect_duplicate_specimens(df, 50, 550)
+    #df_2 = df[df["filename"].isin(a)]
+    #print(a)
+    #print(df_2.shape)
+    df_all = pd.read_csv("output/update_allcruises_df_validated_5with_zoomie_20230727.csv",sep=";")
+    df_all = df_all[df_all['object_cruise']=="PS99.2"]
+    print(df_all.columns)
+    print(df_all.shape)
+    def one_or_zero(x, DD):
+
+        if x in DD:
+            return 1
+        else:
+            return 0
+
+
+    def flatten_list(input_list):
+        return sum(input_list, [])
+
+    ac = flatten_list(a)
+    print("Number of Doubles:", len(ac))
+    df_all["DD"] = df_all["img_file_name"].apply(lambda x: one_or_zero(x, ac))
+    df_all.to_csv("output/DD_out_put_PS992.csv", sep=";")
+    print(df_all["img_file_name"])
+    print(df_all[["label", "DD"]].value_counts())
+    print(df_all[["label", "DD"]].sum())
+    print(df_all.shape)
+    df_artefacts = df_all[df_all["label"] == "Artefact"]
+    print(df_artefacts[["label", "DD"]].value_counts())
+    print(org_dub)
     # df_clean, df_drop_zooms = remove_same_object_img(df=df, treshold=120)
     # print(df_drop_zooms.shape)
     # print(df_clean.shape)
