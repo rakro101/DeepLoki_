@@ -32,10 +32,11 @@ def folder_name(confi: float, pred: str, treshold: float) -> str:
 
 
 def predict_folder(
-    haul_pic_path: str = haul_pic_path,
-    ending: str = ".bmp",
-    arch: str = "dtl_resnet18_classifier",
-    target: Optional[str] = None,
+        haul_pic_path: str = haul_pic_path,
+        ending: str = ".bmp",
+        arch: str = "dtl_resnet18_classifier",
+        target: Optional[str] = None,
+        tr: float = 0.5,
 ) -> pd.DataFrame:
     """
     predict all classes for the images in the folder
@@ -75,7 +76,7 @@ def predict_folder(
     results["preds"] = preds
     results["confis"] = confis
     results["folder"] = results.apply(
-        lambda x: folder_name(x["confis"], x.preds, 0.50), axis=1
+        lambda x: folder_name(x["confis"], x.preds, tr), axis=1
     )
     if target is None:
         results.to_csv(f"inference/csv/inference_results_{arch}.csv", sep=";")
@@ -139,10 +140,12 @@ def copy_to_folder(results: pd.DataFrame, target="inference/sorted"):
 
 
 def main(
-    haul_pic_path: str = haul_pic_path,
-    ending: str = ".bmp",
-    arch: str = "dino_resnet18_classifier",
-    target: str = "inference/sorted",
+        haul_pic_path: str = haul_pic_path,
+        ending: str = ".bmp",
+        arch: str = "dino_resnet18_classifier",
+        target: str = "inference/sorted",
+        tr: float = 0.05,
+
 ):
     """
     main methods
@@ -157,7 +160,7 @@ def main(
     """
     # get preds
     results = predict_folder(
-        haul_pic_path=haul_pic_path, ending=ending, arch=arch, target=target
+        haul_pic_path=haul_pic_path, ending=ending, arch=arch, target=target, tr=tr,
     )
     # create folders
     create_folders(results, target)
