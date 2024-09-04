@@ -17,7 +17,7 @@ def main():
 
     st.subheader("Data for analysis:")
     # drag&drop
-    folder_path = st_directory_picker("/Volumes/T7 Shield/T7/LOKI2/0007_PS143.2_07-4")
+    folder_path = st_directory_picker()
     # choose folder  from explorer
     st.write(f"Selected folder_path: {folder_path}")
     st.write("\n")

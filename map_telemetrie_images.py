@@ -64,13 +64,15 @@ def build_telemetrie_df(root_folder, save_path="meta_data_encoding/all_telemetri
     #     print(l)
     #     print(l.columns)
     #     print(l.head())
-
+    counter = 0
     for i, df in enumerate(list_comp):
         if df.index.duplicated() or (df.shape != (1,25)):
             print(f"DataFrame {i} - Shape: {df.shape}, Index Duplicates: {df.index.has_duplicates}")
             print("#########################")
             print(df.columns)
             print(df.head())
+        else:
+            counter += 1
 
     filtered_df_list = [df for df in list_comp if df.shape == (1, 25)]
     print("Only df with shape 1,25 are kept.")
@@ -90,6 +92,7 @@ def build_telemetrie_df(root_folder, save_path="meta_data_encoding/all_telemetri
     df_tel_all["root_folder"] = root_folder
     df_tel_all.set_index("key", inplace=True)
     df_tel_all.to_csv(save_path,sep=";")
+    print("Number of non matchting files: %s", counter)
     return df_tel_all
 
 def build_log_df(root_folder, save_path="meta_data_encoding/all_log.csv"):
@@ -113,7 +116,7 @@ def build_image_df(root_folder, save_path="meta_data_encoding/all_images.csv"):
 
 if __name__ == "__main__":
     # Path to the haul folder
-    run_name= "haul_004_2024_09_02"
+    run_name= "haul_004_2024_09_04"
     root_folder = "data/0010_PS121-010-03/Haul 9"
     root_folder =  "/Volumes/T7 Shield/T7/LOKI2/0007_PS143.2_07-4/Haul 4" # "data/0010_PS121-010-03/Haul 9"
     # change the save path to telemetie

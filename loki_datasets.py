@@ -124,16 +124,18 @@ class LokiPredictDataset(Dataset):
                     or name.endswith(".bmp")
                     or name.endswith(".png")
                 ):
-                    path_list.append(path)
+
 
                     if self.ending in [".bmp"]:
                         if name[:2] == "._":
-                            name_list.append(name[2:])
-                            print("####12")
+                            #name_list.append(name[2:])
+                            print("Double with ._")
                         else:
                             name_list.append(name)
+                            path_list.append(path)
                     else:
                         name_list.append(name)
+                        path_list.append(path)
                     print(os.path.join(path, name))
         df = pd.DataFrame()
         df["root_path"] = path_list
