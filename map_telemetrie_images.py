@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import numpy as np
+import datetime
 
 # Log data
 df_log = pd.read_csv("meta_data_encoding/log_mapping.csv")
@@ -162,7 +163,10 @@ def find_closest_match(df_env, df_photo):
 
 if __name__ == "__main__":
     # Path to the haul folder
-    run_name= "haul_004_2024_09_07"
+    # timestamp
+    time_stamp = datetime.datetime.now()
+    sub_dir = f"/{str(time_stamp).replace(' ', '_')}"
+    run_name= f"haul_004_{sub_dir}"
     root_folder = "data/0010_PS121-010-03/Haul 9"
     root_folder =  "/Volumes/T7 Shield/T7/LOKI2/0007_PS143.2_07-4/Haul 4" # "data/0010_PS121-010-03/Haul 9"
     # change the save path to telemetie
@@ -180,3 +184,4 @@ if __name__ == "__main__":
 
     df_t = pd.read_csv(f"meta_data_encoding/{run_name}_A_image_tele_data_closed_match.csv", sep=";")
     print(df_t.shape)
+
