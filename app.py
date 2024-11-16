@@ -13,20 +13,20 @@ def main():
     st.title("DeepLOKI: Automatic classify LOKI-Images")
     # st.caption('This is a string that explains something above.')
     st.write("\n")
-    container1 = st.container()
+    #container1 = st.container()
 
-    container1.subheader("Data for analysis:")
+    st.subheader("Data for analysis:")
     # drag&drop
     folder_path = st_directory_picker()
     # choose folder  from explorer
-    container1.write(f"Selected folder_path: {folder_path}")
+    st.write(f"Selected folder_path: {folder_path}")
     st.write("\n")
 
-    container2 = st.container()
-    container2.subheader("Path to the classification folders")
+    #container2 = st.container()
+    st.subheader("Path to the classification folders")
     st.write("\n")
 
-    save_folder_path = container2.selectbox(
+    save_folder_path = st.selectbox(
         "Select you folder path.",
         [
             "./inference/sorted",
@@ -34,11 +34,20 @@ def main():
     )
     time_stamp = datetime.datetime.now()
     sub_dir = f"/{str(time_stamp).replace(' ', '_')}"
-    container2.write(f"Selected save_folder_path: {save_folder_path+sub_dir}")
 
-    option = container2.selectbox("Select a classifier?", ("DTL", "DINO"))
+    col1, col2 = st.columns(2)
+    with col1:
+        TR = st.slider(
+                "Threshold", min_value=0.0, max_value=1.0, value=0.5, step=0.01, help="Select the confidence threshold for sorting.",
+            )
 
-    if container2.button("Start Sorting"):
+    st.write(f"Selected save_folder_path: {save_folder_path+sub_dir}")
+
+    with col2:
+        option = st.selectbox("Select a classifier?", ("DTL", "DINO"))
+
+
+    if st.button("Start Sorting"):
         with st.spinner("(Pre-)Sorting images..."):
             start_time = time.time()
             print("##########folder_path:", folder_path)
@@ -46,7 +55,8 @@ def main():
                 haul_pic_path=folder_path,
                 ending=".png",
                 arch=option,
-                target=save_folder_path + sub_dir,
+                target=save_folder_path + sub_dir + "_" + option,
+                tr = TR,
             )
             elapsed_time = time.time() - start_time
         st.write("\n")
