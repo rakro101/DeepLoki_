@@ -29,7 +29,7 @@ def main():
     save_folder_path = st.selectbox(
         "Select you folder path.",
         [
-            "./inference/sorted",
+            "/Volumes/T7 Shield/T7/LOKI2/output",#  ./inference/sorted
         ],
     )
     time_stamp = datetime.datetime.now()
@@ -45,6 +45,7 @@ def main():
 
     with col2:
         option = st.selectbox("Select a classifier?", ("DTL", "DINO"))
+        ending = st.selectbox("Select a image format?", (".png", ".bmp"))
 
 
     if st.button("Start Sorting"):
@@ -53,7 +54,7 @@ def main():
             print("##########folder_path:", folder_path)
             sort_img_and_save.main(
                 haul_pic_path=folder_path,
-                ending=".png",
+                ending=ending,
                 arch=option,
                 target=save_folder_path + sub_dir + "_" + option,
                 tr = TR,

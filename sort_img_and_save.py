@@ -66,6 +66,7 @@ def predict_folder(
         max_epochs=5, accelerator="mps", devices="auto", deterministic=True
     )
     a = trainer.predict(model, pred_loader)
+    print("Prediction finished")
     names = [
         item for d in a for item in d["file_names"]
     ]  # item for d in a for item in d['outputs']
@@ -75,11 +76,16 @@ def predict_folder(
     results["file_names"] = names
     results["preds"] = preds
     results["confis"] = confis
+    print("Add Confis scores")
     results["folder"] = results.apply(
         lambda x: folder_name(x["confis"], x.preds, tr), axis=1
     )
     if target is None:
         results.to_csv(f"inference/csv/inference_results_{arch}.csv", sep=";")
+        print("Saved inference %s" f"inference/csv/inference_results_{arch}.csv")
+    #else:
+    #    results.to_csv(f"{target}_{arch}.csv", sep=";")
+    #    print("Saved inference %s" f"{target}_{arch}.csv")
     return results
 
 
@@ -134,7 +140,7 @@ def copy_to_folder(results: pd.DataFrame, target="inference/sorted"):
             source,
             os.path.join(dest, filename.replace("." + filename.split(".")[-1], ".png")),
         )
-
+    print("Save csv to %s",f"{target.replace('sorted', 'csv')}_inference_results.csv")
     results.to_csv(f"{target.replace('sorted', 'csv')}_inference_results.csv", sep=";")
     return None
 
@@ -163,8 +169,10 @@ def main(
         haul_pic_path=haul_pic_path, ending=ending, arch=arch, target=target, tr=tr,
     )
     # create folders
+    print("Create folders:")
     create_folders(results, target)
     # copy to folders
+    print("Copy folders:")
     copy_to_folder(results, target)
     print("done")
     return None

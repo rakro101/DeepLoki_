@@ -25,9 +25,12 @@ class ImageFileLister:
             if foldername != self.root_path:
                 folders.append(foldername.split("/")[-1])
             for filename in filenames:
+                if filename[:2] == "._":
+                    filename = filename[2:]
                 file_path = os.path.join(foldername, filename)
                 if self.is_image_file(file_path):
                     self.data["imagename"].append(filename)
+
                     self.data["path_to_image"].append(file_path)
                     self.data["label"].append(label)
 
@@ -43,6 +46,13 @@ def get_unique_labels(root_path):
 def main():
     st.set_page_config(layout="wide")
     start_root = "data/5_cruises/"
+    start_root = "/Volumes/T7 Shield/T7/LOKI2/output/"
+    start_root = st.selectbox(
+        "Select you folder path.",
+        [
+            "/Volumes/T7 Shield/T7/LOKI2/output/",#  #ToDo Fix the path
+        ],
+    )
     # read subfolders in a give directory based on the actual directory level
     foldernames_list = [os.path.basename(x) for x in glob.glob(f"{start_root}*")]
 
