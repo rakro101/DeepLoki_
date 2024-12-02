@@ -54,7 +54,7 @@ def main():
             st.session_state.df = df_abt_99_test
 
     with col2:
-        st.title("DeepLoki: Image Viewer")
+        st.title("DeepLOKI: Image Viewer")
         # st.caption('This is a string that explains something above.')
         st.write('\n')
         img_path = os.path.join(st.session_state.df['root_path'].values[st.session_state.count], st.session_state.df['img_file_name'].values[st.session_state.count])

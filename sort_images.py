@@ -46,7 +46,7 @@ def get_unique_labels(root_path):
 
 def main():
     st.set_page_config(layout="wide")
-    start_root = "data/5_cruises/"
+    start_root = "data/5_cruises_wrong/"
     # read subfolders in a give directory based on the actual directory level
     foldernames_list = [os.path.basename(x) for x in glob.glob(f'{start_root}*')]
 
@@ -107,7 +107,7 @@ def main():
             selected_image_label = st.selectbox("Select Label:", unique_labels,
                                                 index=unique_labels.index(default_label))
             with col2:
-                st.title("DeepLoki: Labeltool")
+                st.title("DeepLOKI: Labeltool")
                 # st.caption('This is a string that explains something above.')
                 st.image(image = Image.open(filtered_df['path_to_image'][current_image_index]).convert('RGB').resize((800, 800)), use_column_width=True,
                          caption=f"{filtered_df['imagename'][current_image_index]}: {filtered_df['label'][current_image_index]} ")
